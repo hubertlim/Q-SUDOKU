@@ -3,11 +3,31 @@
   const messageEl = document.getElementById('message');
   const timerEl = document.getElementById('timer');
   const numBtns = document.querySelectorAll('.num-btn');
+  const themeDots = document.querySelectorAll('.theme-dot');
 
   let puzzle, solution, selected = null, timerInterval, seconds = 0;
   let difficulty = 'easy';
   let cells = [];
-  let activeNum = 0; // currently selected number on numpad
+  let activeNum = 0;
+
+  // ── Theme ──────────────────────────────────────────────────────
+
+  function setTheme(name) {
+    document.documentElement.setAttribute('data-theme', name);
+    localStorage.setItem('q-sudoku-theme', name);
+    themeDots.forEach(dot => {
+      dot.classList.toggle('active', dot.dataset.theme === name);
+    });
+  }
+
+  function initTheme() {
+    const saved = localStorage.getItem('q-sudoku-theme') || 'midnight';
+    setTheme(saved);
+  }
+
+  themeDots.forEach(dot => {
+    dot.addEventListener('click', () => setTheme(dot.dataset.theme));
+  });
 
   // ── Board rendering ────────────────────────────────────────────
 
@@ -285,5 +305,6 @@
   window.addEventListener('beforeunload', stopTimer);
 
   // ── Init ───────────────────────────────────────────────────────
+  initTheme();
   newGame();
 })();

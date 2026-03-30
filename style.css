@@ -1,6 +1,6 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-:root {
+:root, [data-theme="midnight"] {
   --bg: #0a0a10;
   --bg2: #0e0e16;
   --surface: #151520;
@@ -17,6 +17,96 @@
   --error: #ff6b6b;
   --success: #51cf66;
   --radius: 8px;
+  --grad1: rgba(108, 92, 231, 0.04);
+  --grad2: rgba(162, 155, 254, 0.03);
+  --selected-bg: rgba(108, 92, 231, 0.28);
+  --highlight-bg: rgba(108, 92, 231, 0.08);
+  --same-bg: rgba(162, 155, 254, 0.18);
+  --error-bg: rgba(255, 107, 107, 0.08);
+  --glow1: rgba(108, 92, 231, 0.3);
+  --glow2: rgba(162, 155, 254, 0.5);
+  --board-shadow: rgba(108, 92, 231, 0.06);
+}
+
+[data-theme="nord"] {
+  --bg: #2e3440;
+  --bg2: #3b4252;
+  --surface: #434c5e;
+  --surface-hover: #4c566a;
+  --border: #4c566a;
+  --border-box: #5e81ac;
+  --accent: #88c0d0;
+  --accent-glow: #8fbcbb;
+  --accent-dim: rgba(136, 192, 208, 0.15);
+  --text: #eceff4;
+  --text-dim: #7b88a1;
+  --given: #eceff4;
+  --input: #88c0d0;
+  --error: #bf616a;
+  --success: #a3be8c;
+  --grad1: rgba(136, 192, 208, 0.05);
+  --grad2: rgba(143, 188, 187, 0.04);
+  --selected-bg: rgba(136, 192, 208, 0.25);
+  --highlight-bg: rgba(136, 192, 208, 0.08);
+  --same-bg: rgba(143, 188, 187, 0.18);
+  --error-bg: rgba(191, 97, 106, 0.1);
+  --glow1: rgba(136, 192, 208, 0.3);
+  --glow2: rgba(143, 188, 187, 0.5);
+  --board-shadow: rgba(136, 192, 208, 0.06);
+}
+
+[data-theme="rose"] {
+  --bg: #191724;
+  --bg2: #1f1d2e;
+  --surface: #26233a;
+  --surface-hover: #2a2740;
+  --border: #393552;
+  --border-box: #6e6a86;
+  --accent: #eb6f92;
+  --accent-glow: #ebbcba;
+  --accent-dim: rgba(235, 111, 146, 0.15);
+  --text: #e0def4;
+  --text-dim: #6e6a86;
+  --given: #e0def4;
+  --input: #ebbcba;
+  --error: #eb6f92;
+  --success: #9ccfd8;
+  --grad1: rgba(235, 111, 146, 0.04);
+  --grad2: rgba(235, 188, 186, 0.03);
+  --selected-bg: rgba(235, 111, 146, 0.22);
+  --highlight-bg: rgba(235, 111, 146, 0.07);
+  --same-bg: rgba(235, 188, 186, 0.15);
+  --error-bg: rgba(235, 111, 146, 0.1);
+  --glow1: rgba(235, 111, 146, 0.3);
+  --glow2: rgba(235, 188, 186, 0.5);
+  --board-shadow: rgba(235, 111, 146, 0.06);
+}
+
+[data-theme="paper"] {
+  --bg: #f5f0e8;
+  --bg2: #ebe6dc;
+  --surface: #e0dbd1;
+  --surface-hover: #d6d0c5;
+  --border: #c8c2b6;
+  --border-box: #8a8478;
+  --accent: #7c6f5b;
+  --accent-glow: #5c5347;
+  --accent-dim: rgba(124, 111, 91, 0.12);
+  --text: #3a3530;
+  --text-dim: #9a9488;
+  --given: #2a2520;
+  --input: #7c6f5b;
+  --error: #c44040;
+  --success: #5a8a5a;
+  --grad1: rgba(124, 111, 91, 0.04);
+  --grad2: rgba(92, 83, 71, 0.03);
+  --selected-bg: rgba(124, 111, 91, 0.18);
+  --highlight-bg: rgba(124, 111, 91, 0.07);
+  --same-bg: rgba(124, 111, 91, 0.12);
+  --error-bg: rgba(196, 64, 64, 0.08);
+  --glow1: rgba(124, 111, 91, 0.2);
+  --glow2: rgba(92, 83, 71, 0.3);
+  --board-shadow: rgba(0, 0, 0, 0.05);
 }
 
 html, body {
@@ -24,12 +114,16 @@ html, body {
   overflow: hidden;
 }
 
+html {
+  transition: background-color 0.3s, color 0.3s;
+}
+
 body {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
   background: var(--bg);
   background-image:
-    radial-gradient(ellipse at 20% 50%, rgba(108, 92, 231, 0.04) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 50%, rgba(162, 155, 254, 0.03) 0%, transparent 60%);
+    radial-gradient(ellipse at 20% 50%, var(--grad1) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 50%, var(--grad2) 0%, transparent 60%);
   color: var(--text);
   display: flex;
   justify-content: center;
@@ -54,6 +148,49 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+}
+
+#topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#theme-picker {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.theme-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.theme-dot span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: block;
+}
+
+.theme-dot:hover {
+  border-color: var(--accent);
+  transform: scale(1.15);
+}
+
+.theme-dot.active {
+  border-color: var(--accent-glow);
+  box-shadow: 0 0 8px var(--glow1);
 }
 
 h1 {
@@ -98,7 +235,7 @@ h1 .dim { color: var(--text-dim); }
   border: 2px solid var(--border-box);
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 0 40px rgba(108, 92, 231, 0.06);
+  box-shadow: 0 0 40px var(--board-shadow);
 }
 
 .cell {
@@ -123,16 +260,16 @@ h1 .dim { color: var(--text-dim); }
 .cell.input { color: var(--input); }
 
 .cell.selected {
-  background: rgba(108, 92, 231, 0.28);
+  background: var(--selected-bg);
   box-shadow: inset 0 0 0 2px var(--accent);
 }
 
-.cell.highlight { background: rgba(108, 92, 231, 0.08); }
-.cell.same-num { background: rgba(162, 155, 254, 0.18); }
+.cell.highlight { background: var(--highlight-bg); }
+.cell.same-num { background: var(--same-bg); }
 
 .cell.error {
   color: var(--error);
-  background: rgba(255, 107, 107, 0.08);
+  background: var(--error-bg);
   animation: shake 0.3s;
 }
 
@@ -174,7 +311,7 @@ h1 .dim { color: var(--text-dim); }
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(108, 92, 231, 0.3);
+  box-shadow: 0 0 12px var(--glow1);
 }
 
 #numpad {
@@ -208,7 +345,7 @@ h1 .dim { color: var(--text-dim); }
   background: var(--accent-dim);
   border-color: var(--accent);
   color: var(--accent-glow);
-  box-shadow: 0 0 10px rgba(108, 92, 231, 0.2);
+  box-shadow: 0 0 10px var(--glow1);
 }
 
 .num-btn.completed {
@@ -284,8 +421,8 @@ h1 .dim { color: var(--text-dim); }
 .cell.pop { animation: pop 0.15s ease-out; }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 12px rgba(108, 92, 231, 0.3); }
-  50% { box-shadow: 0 0 36px rgba(162, 155, 254, 0.5); }
+  0%, 100% { box-shadow: 0 0 12px var(--glow1); }
+  50% { box-shadow: 0 0 36px var(--glow2); }
 }
 
 #board.won { animation: glow 1.5s ease-in-out 3; }
@@ -295,7 +432,8 @@ h1 .dim { color: var(--text-dim); }
 .cell:focus-visible,
 .num-btn:focus-visible,
 .diff-btn:focus-visible,
-#actions button:focus-visible {
+#actions button:focus-visible,
+.theme-dot:focus-visible {
   outline: 2px solid var(--accent-glow);
   outline-offset: -2px;
 }

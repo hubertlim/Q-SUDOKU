@@ -14,7 +14,15 @@
   <main id="app">
     <header id="topbar">
       <h1>Q<span class="dim">-</span>SUDOKU</h1>
-      <time id="timer" aria-live="off" aria-label="Elapsed time">00:00</time>
+      <div id="topbar-right">
+        <div id="theme-picker" aria-label="Theme selection">
+          <button class="theme-dot" data-theme="midnight" title="Midnight" aria-label="Midnight theme"><span style="background:#6c5ce7"></span></button>
+          <button class="theme-dot" data-theme="nord" title="Nord" aria-label="Nord theme"><span style="background:#88c0d0"></span></button>
+          <button class="theme-dot" data-theme="rose" title="Rosé Pine" aria-label="Rosé Pine theme"><span style="background:#eb6f92"></span></button>
+          <button class="theme-dot" data-theme="paper" title="Paper" aria-label="Paper theme"><span style="background:#d4c5a9"></span></button>
+        </div>
+        <time id="timer" aria-live="off" aria-label="Elapsed time">00:00</time>
+      </div>
     </header>
     <div id="game">
       <div id="board-wrap">
