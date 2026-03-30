@@ -253,9 +253,6 @@
   function onCellClick(r, c) {
     if (paused || solved) return;
     selectCell(r, c);
-    if (activeNum > 0 && !given[r][c]) {
-      placeNumber(activeNum);
-    }
   }
 
   function selectCell(r, c) {
@@ -582,8 +579,8 @@
       if (paused || solved) return;
       if (num === 0) { placeNumber(0); return; }
       setActiveNum(num);
-      if (selected && activeNum > 0 && !given[selected.r][selected.c]) {
-        placeNumber(activeNum);
+      if (selected && !given[selected.r][selected.c]) {
+        placeNumber(num);
       }
     });
   });
