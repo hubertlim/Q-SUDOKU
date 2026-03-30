@@ -770,11 +770,13 @@
   function hasActiveGame() {
     if (solved) return false;
     if (!puzzle) return false;
+    if (isLearnMode) return true;
+    // Consider active if any user input placed OR game has been running
     const size = (currentChallenge && currentChallenge.size === 4) ? 4 : 9;
     for (let r = 0; r < size; r++)
       for (let c = 0; c < size; c++)
         if (!given[r][c] && puzzle[r][c] !== 0) return true;
-    return seconds > 10;
+    return seconds > 5;
   }
 
   function confirmAction(msg, callback) {
@@ -807,6 +809,7 @@
         confirmAction('Leave current game for Learn mode?', () => openLearnOverlay());
         return;
       }
+      const label = btn.dataset.diff.charAt(0).toUpperCase() + btn.dataset.diff.slice(1);
       const switchDiff = () => {
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -814,9 +817,9 @@
         newGame();
       };
       if (btn.dataset.diff === difficulty && !isLearnMode) {
-        confirmAction('Start a new game?', switchDiff);
+        confirmAction(`Start a new ${label} game?`, switchDiff);
       } else {
-        confirmAction('Abandon current game?', switchDiff);
+        confirmAction(`Switch to ${label}? Current game will be lost.`, switchDiff);
       }
     });
   });
