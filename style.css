@@ -911,6 +911,39 @@ h1 .dim { color: var(--text-dim); }
 
 #message.error { color: var(--error); }
 
+#confirm-bar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  animation: pop 0.15s ease-out;
+}
+#confirm-bar:not([hidden]) { display: flex; }
+#confirm-text {
+  font-size: 0.75rem;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+#confirm-yes, #confirm-no {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+#confirm-yes {
+  background: var(--error);
+  color: #fff;
+  border-color: var(--error);
+}
+#confirm-yes:hover { opacity: 0.85; }
+#confirm-no:hover { border-color: var(--accent); }
+
 /* ── Animations ─────────────────────────────────────────────── */
 
 @keyframes shake {
@@ -1009,6 +1042,8 @@ h1 .dim { color: var(--text-dim); }
   #score-bar, #streak-bar, #challenge-bar { padding: 0.3rem 0.5rem; font-size: 0.6rem; }
   #best-scores { font-size: 0.5rem; }
   #message { font-size: 0.7rem; }
+  #confirm-text { font-size: 0.65rem; }
+  #confirm-yes, #confirm-no { font-size: 0.6rem; padding: 0.2rem 0.5rem; }
 
   /* Learn overlay mobile */
   #learn-overlay { align-items: flex-start; padding-top: env(safe-area-inset-top, 0); }

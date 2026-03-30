@@ -393,6 +393,7 @@
 
   function onCellClick(r, c) {
     if (paused || solved) return;
+    dismissConfirm();
     selectCell(r, c);
   }
 
@@ -707,18 +708,63 @@
     messageEl.className = isError ? 'error' : '';
   }
 
+  // ── Confirmation ───────────────────────────────────────────────
+
+  const confirmBar = document.getElementById('confirm-bar');
+  const confirmText = document.getElementById('confirm-text');
+  let confirmCallback = null;
+
+  function hasActiveGame() {
+    if (solved) return false;
+    if (!puzzle) return false;
+    const size = (currentChallenge && currentChallenge.size === 4) ? 4 : 9;
+    for (let r = 0; r < size; r++)
+      for (let c = 0; c < size; c++)
+        if (!given[r][c] && puzzle[r][c] !== 0) return true;
+    return seconds > 10;
+  }
+
+  function confirmAction(msg, callback) {
+    if (!hasActiveGame()) { callback(); return; }
+    confirmText.textContent = msg;
+    confirmBar.hidden = false;
+    messageEl.style.display = 'none';
+    confirmCallback = callback;
+  }
+
+  function dismissConfirm() {
+    confirmBar.hidden = true;
+    messageEl.style.display = '';
+    confirmCallback = null;
+  }
+
+  document.getElementById('confirm-yes').addEventListener('click', () => {
+    const cb = confirmCallback;
+    dismissConfirm();
+    if (cb) cb();
+  });
+
+  document.getElementById('confirm-no').addEventListener('click', dismissConfirm);
+
   // ── Event binding ──────────────────────────────────────────────
 
   document.querySelectorAll('.diff-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.dataset.diff === 'learn') {
-        openLearnOverlay();
+        confirmAction('Leave current game for Learn mode?', () => openLearnOverlay());
         return;
       }
-      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      difficulty = btn.dataset.diff;
-      newGame();
+      const switchDiff = () => {
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        difficulty = btn.dataset.diff;
+        newGame();
+      };
+      if (btn.dataset.diff === difficulty && !isLearnMode) {
+        confirmAction('Start a new game?', switchDiff);
+      } else {
+        confirmAction('Abandon current game?', switchDiff);
+      }
     });
   });
 
@@ -734,10 +780,14 @@
     });
   });
 
-  document.getElementById('btn-new').addEventListener('click', newGame);
+  document.getElementById('btn-new').addEventListener('click', () => {
+    confirmAction('Start a new game?', newGame);
+  });
   document.getElementById('btn-check').addEventListener('click', checkBoard);
   document.getElementById('btn-hint').addEventListener('click', useHint);
-  document.getElementById('btn-solve').addEventListener('click', solveBoard);
+  document.getElementById('btn-solve').addEventListener('click', () => {
+    confirmAction('Reveal the solution? No score will be awarded.', solveBoard);
+  });
   document.getElementById('learn-close').addEventListener('click', () => {
     document.getElementById('learn-overlay').hidden = true;
   });
