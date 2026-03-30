@@ -12,7 +12,7 @@
   let selected = null, timerInterval, seconds = 0;
   let difficulty = 'easy', cells = [], activeNum = 0;
   let paused = false, checks = 0, solved = false;
-  let hints = 0, maxHints = 5, lastHintCell = null;
+  let hints = 0, maxHints = 5;
   let streak = 0, isLearnMode = false;
 
   const SCORE_MULT = { learn: 500, easy: 1000, medium: 2000, hard: 3000 };
@@ -288,7 +288,7 @@
   function clearHighlights() {
     cells.forEach(c => {
       const wasCandidates = c.classList.contains('candidates');
-      c.classList.remove('selected', 'highlight', 'same-num', 'error', 'candidates', 'hint-nudge');
+      c.classList.remove('selected', 'highlight', 'same-num', 'error', 'candidates');
       if (wasCandidates) {
         const r = parseInt(c.dataset.r), col = parseInt(c.dataset.c);
         c.textContent = puzzle[r][col] || '';
@@ -403,7 +403,6 @@
     activeNum = 0;
     hints = 0;
     maxHints = HINT_LIMITS[difficulty] || 5;
-    lastHintCell = null;
     streak = 0;
     isLearnMode = (difficulty === 'learn');
     btnPause.textContent = '⏸';
@@ -457,61 +456,28 @@
       return;
     }
 
-    // Tier 1: No cell selected → nudge (highlight most constrained empty cell)
-    if (!selected || given[selected.r][selected.c]) {
-      const target = Sudoku.getMostConstrainedEmpty(puzzle);
-      if (!target) return;
-      hints++;
-      clearHighlights();
-      selectCell(target.r, target.c);
-      const cell = getCell(target.r, target.c);
-      cell.classList.add('hint-nudge');
-      setTimeout(() => cell.classList.remove('hint-nudge'), 1200);
-      lastHintCell = `${target.r},${target.c}`;
-      showMessage(`Look here. (−${HINT_PENALTY} pts)`, false);
-      updateHintButton();
-      updateScoreDisplay();
-      saveSession();
-      return;
-    }
+    // Find best empty cell and reveal its answer
+    const target = Sudoku.getMostConstrainedEmpty(puzzle);
+    if (!target) return;
 
-    const { r, c } = selected;
-    if (puzzle[r][c] !== 0) {
-      showMessage('Cell already filled.', true);
-      return;
-    }
-
-    const cellKey = `${r},${c}`;
-
-    // Tier 2: Cell selected, first hint on it → show candidates
-    if (lastHintCell !== cellKey) {
-      hints++;
-      lastHintCell = cellKey;
-      const cands = Sudoku.getCandidates(puzzle, r, c);
-      const cell = getCell(r, c);
-      cell.classList.add('candidates');
-      cell.textContent = cands.join(' ');
-      showMessage(`Possible: ${cands.join(', ')}. (−${HINT_PENALTY} pts)`, false);
-      updateHintButton();
-      updateScoreDisplay();
-      saveSession();
-      return;
-    }
-
-    // Tier 3: Same cell, second hint → reveal answer
-    hints++;
-    lastHintCell = null;
+    const { r, c } = target;
     const answer = solution[r][c];
+    hints++;
     puzzle[r][c] = answer;
+
+    clearHighlights();
+    selectCell(r, c);
     const cell = getCell(r, c);
-    cell.classList.remove('candidates');
+    cell.classList.remove('pencil-marks', 'guide-cell');
     cell.textContent = answer;
     cell.classList.add('hint-reveal');
     setTimeout(() => cell.classList.remove('hint-reveal'), 400);
-    showMessage(`Revealed: ${answer}. (−${HINT_PENALTY} pts)`, false);
+
+    showMessage(`Hint: ${answer} at R${r + 1}C${c + 1}. (−${HINT_PENALTY} pts)`, false);
     updateNumpadCounts();
     updateHintButton();
     updateScoreDisplay();
+    if (isLearnMode) renderLearnOverlays();
     saveSession();
     checkWin();
   }

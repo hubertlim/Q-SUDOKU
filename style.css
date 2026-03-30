@@ -483,11 +483,6 @@ h1 .dim { color: var(--text-dim); }
   letter-spacing: 0.05em;
 }
 
-.cell.hint-nudge {
-  background: var(--accent-dim);
-  animation: nudge-pulse 0.6s ease-in-out 2;
-}
-
 .cell.hint-reveal {
   color: var(--success);
   animation: reveal-pop 0.4s ease-out;
@@ -563,11 +558,6 @@ h1 .dim { color: var(--text-dim); }
   color: var(--bg);
   border-color: var(--success);
   box-shadow: 0 0 12px rgba(81, 207, 102, 0.3);
-}
-
-@keyframes nudge-pulse {
-  0%, 100% { background: var(--accent-dim); }
-  50% { background: var(--selected-bg); }
 }
 
 @keyframes reveal-pop {
