@@ -194,8 +194,11 @@
     const overlay = document.getElementById('learn-overlay');
     const stages = document.getElementById('learn-stages');
     const lesson = document.getElementById('learn-lesson');
+    const complete = document.getElementById('learn-complete');
     overlay.hidden = false;
     lesson.hidden = true;
+    complete.hidden = true;
+    stages.style.display = '';
     stages.innerHTML = '';
     document.getElementById('learn-stars-total').textContent =
       `⭐ ${Learn.getTotalStars()} / ${Learn.CHALLENGES.length * 3}`;
@@ -251,6 +254,7 @@
 
   function startChallenge(id) {
     document.getElementById('learn-overlay').hidden = true;
+    document.getElementById('challenge-done').hidden = true;
     const ch = Learn.getChallenge(id);
     currentChallenge = ch;
     isLearnMode = true;
@@ -286,14 +290,62 @@
     updateLearnUI();
   }
 
+  let lastCompletedId = null;
+
   function endChallenge() {
     if (!currentChallenge) return;
     const stars = Learn.calcStars(seconds, hints);
     Learn.saveProgress(currentChallenge.id, stars);
+    lastCompletedId = currentChallenge.id;
     const msg = `${'⭐'.repeat(stars)} Challenge #${currentChallenge.id} complete!`;
     showMessage(msg, false);
-    currentChallenge = null;
     document.getElementById('challenge-bar').classList.remove('visible');
+    currentChallenge = null;
+
+    // Show done bar with next challenge option
+    const doneBar = document.getElementById('challenge-done');
+    const nextBtn = document.getElementById('done-next');
+    const hasNext = lastCompletedId < Learn.CHALLENGES.length && Learn.isUnlocked(lastCompletedId + 1);
+    nextBtn.hidden = !hasNext;
+    doneBar.hidden = false;
+  }
+
+  function goToNextChallenge() {
+    if (!lastCompletedId) return;
+    const nextId = lastCompletedId + 1;
+    if (nextId > Learn.CHALLENGES.length) return;
+    document.getElementById('challenge-done').hidden = true;
+    startChallenge(nextId);
+  }
+
+  function goToChallengeList() {
+    document.getElementById('challenge-done').hidden = true;
+    openLearnOverlay();
+  }
+
+  // Show completion in learn overlay (when opened after completing)
+  function showCompletionInOverlay(id, stars) {
+    const ch = Learn.CHALLENGES.find(c => c.id === id);
+    document.getElementById('learn-stages').style.display = 'none';
+    document.getElementById('learn-lesson').hidden = true;
+    const complete = document.getElementById('learn-complete');
+    complete.hidden = false;
+    document.getElementById('complete-stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    document.getElementById('complete-title').textContent = `Challenge #${id}: ${ch.title}`;
+    const hasNext = id < Learn.CHALLENGES.length;
+    document.getElementById('complete-msg').textContent = hasNext
+      ? 'Ready for the next one?'
+      : 'You completed all challenges!';
+    const nextBtn = document.getElementById('complete-next');
+    nextBtn.hidden = !hasNext;
+    nextBtn.onclick = () => {
+      document.getElementById('learn-overlay').hidden = true;
+      startChallenge(id + 1);
+    };
+    document.getElementById('complete-back').onclick = () => {
+      complete.hidden = true;
+      document.getElementById('learn-stages').style.display = '';
+    };
   }
 
   function renderLearnOverlays() {
@@ -554,6 +606,7 @@
     currentChallenge = null;
     isLearnMode = false;
     document.getElementById('challenge-bar').classList.remove('visible');
+    document.getElementById('challenge-done').hidden = true;
     gameEl.classList.remove('game-mini');
     btnPause.textContent = '⏸';
     btnPause.classList.remove('paused');
@@ -791,6 +844,8 @@
   document.getElementById('learn-close').addEventListener('click', () => {
     document.getElementById('learn-overlay').hidden = true;
   });
+  document.getElementById('done-next').addEventListener('click', goToNextChallenge);
+  document.getElementById('done-list').addEventListener('click', goToChallengeList);
   btnPause.addEventListener('click', togglePause);
   document.getElementById('btn-resume').addEventListener('click', togglePause);
 

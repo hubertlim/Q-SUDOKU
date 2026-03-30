@@ -770,6 +770,61 @@ h1 .dim { color: var(--text-dim); }
 #lesson-start:hover { opacity: 0.9; }
 #lesson-back:hover { border-color: var(--accent); }
 
+/* Learn completion view */
+#learn-complete { text-align: center; padding: 1.5rem 0; }
+#learn-complete[hidden] { display: none; }
+#complete-stars { font-size: 2rem; margin-bottom: 0.5rem; }
+#complete-title {
+  font-size: 1rem; font-weight: 400; color: var(--text);
+  margin-bottom: 0.3rem;
+}
+#complete-msg {
+  font-size: 0.7rem; color: var(--text-dim);
+  margin-bottom: 1rem; line-height: 1.4;
+}
+#complete-actions {
+  display: flex; gap: 0.5rem;
+}
+#complete-back, #complete-next {
+  flex: 1;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0; border-radius: var(--radius);
+  font-family: inherit; font-size: 0.75rem;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+#complete-next {
+  background: var(--success); color: var(--bg);
+  border-color: var(--success);
+}
+#complete-next:hover { opacity: 0.9; }
+#complete-back:hover { border-color: var(--accent); }
+#complete-next[hidden] { display: none; }
+
+/* Challenge done bar (on game screen) */
+#challenge-done {
+  display: none;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  animation: pop 0.2s ease-out;
+}
+#challenge-done:not([hidden]) { display: flex; }
+#done-next, #done-list {
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.35rem 1rem; border-radius: var(--radius);
+  font-family: inherit; font-size: 0.7rem;
+  cursor: pointer; transition: all 0.2s;
+}
+#done-next {
+  background: var(--success); color: var(--bg);
+  border-color: var(--success);
+}
+#done-next:hover { opacity: 0.9; }
+#done-list:hover { border-color: var(--accent); }
+#done-next[hidden] { display: none; }
+
 /* 4×4 board override */
 #board.board-4 {
   --cell: min(calc((100dvh - 12rem) / 5), 72px);

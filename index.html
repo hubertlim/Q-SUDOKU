@@ -111,6 +111,10 @@
       </aside>
     </div>
     <div id="message" role="status" aria-live="polite"></div>
+    <div id="challenge-done" hidden>
+      <button id="done-next">Next Challenge →</button>
+      <button id="done-list">All Challenges</button>
+    </div>
     <div id="confirm-bar" hidden>
       <span id="confirm-text"></span>
       <button id="confirm-yes">Yes</button>
@@ -134,6 +138,15 @@
           <div id="lesson-actions">
             <button id="lesson-back">← Back</button>
             <button id="lesson-start">Start Challenge</button>
+          </div>
+        </div>
+        <div id="learn-complete" hidden>
+          <div id="complete-stars"></div>
+          <h3 id="complete-title"></h3>
+          <p id="complete-msg"></p>
+          <div id="complete-actions">
+            <button id="complete-back">All Challenges</button>
+            <button id="complete-next">Next →</button>
           </div>
         </div>
       </div>
