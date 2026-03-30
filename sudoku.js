@@ -207,7 +207,8 @@ const Sudoku = (() => {
   function generate(difficulty = 'easy') {
     const solution = generateFull();
     const puzzle = solution.map(r => [...r]);
-    const target = 81 - (CLUES[difficulty] || 38);
+    const clueCount = (typeof difficulty === 'number') ? difficulty : (CLUES[difficulty] || 38);
+    const target = 81 - clueCount;
 
     // Build shuffled position list
     const positions = shuffle(

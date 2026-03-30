@@ -7,6 +7,7 @@
   const btnPause = document.getElementById('btn-pause');
   const numBtns = document.querySelectorAll('.num-btn');
   const themeDots = document.querySelectorAll('.theme-dot');
+  const gameEl = document.getElementById('game');
 
   let puzzle, solution, given;
   let selected = null, timerInterval, seconds = 0;
@@ -63,14 +64,18 @@
 
   // ── Save / Restore ─────────────────────────────────────────────
 
+  let saveTimeout = null;
   function saveSession() {
     if (solved) { localStorage.removeItem(SAVE_KEY); return; }
-    const data = {
-      puzzle, solution, given, difficulty,
-      seconds, checks, activeNum, hints, maxHints,
-      streak, isLearnMode
-    };
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      const data = {
+        puzzle, solution, given, difficulty,
+        seconds, checks, activeNum, hints, maxHints,
+        streak, isLearnMode
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    }, 300);
   }
 
   function loadSession() {
@@ -128,7 +133,6 @@
   // ── Board rendering ────────────────────────────────────────────
 
   function renderBoard() {
-    const gameEl = document.getElementById('game');
     boardEl.innerHTML = '';
     boardEl.className = '';
     cells = [];
@@ -549,7 +553,7 @@
     currentChallenge = null;
     isLearnMode = false;
     document.getElementById('challenge-bar').classList.remove('visible');
-    document.getElementById('game').classList.remove('game-mini');
+    gameEl.classList.remove('game-mini');
     btnPause.textContent = '⏸';
     btnPause.classList.remove('paused');
     numBtns.forEach(btn => btn.classList.remove('active-num'));
@@ -601,24 +605,41 @@
       return;
     }
 
-    // Find best empty cell and reveal its answer
-    const target = Sudoku.getMostConstrainedEmpty(puzzle);
-    if (!target) return;
+    const size = (currentChallenge && currentChallenge.size === 4) ? 4 : 9;
+    let targetR = -1, targetC = -1;
 
-    const { r, c } = target;
-    const answer = solution[r][c];
+    if (size === 4) {
+      let minCand = 5;
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (puzzle[r][c] !== 0) continue;
+          const cands = getMini4Candidates(puzzle, r, c);
+          if (cands.length > 0 && cands.length < minCand) {
+            minCand = cands.length;
+            targetR = r; targetC = c;
+          }
+        }
+      }
+    } else {
+      const target = Sudoku.getMostConstrainedEmpty(puzzle);
+      if (target) { targetR = target.r; targetC = target.c; }
+    }
+
+    if (targetR === -1) return;
+
+    const answer = solution[targetR][targetC];
     hints++;
-    puzzle[r][c] = answer;
+    puzzle[targetR][targetC] = answer;
 
     clearHighlights();
-    selectCell(r, c);
-    const cell = getCell(r, c);
+    selectCell(targetR, targetC);
+    const cell = getCell(targetR, targetC);
     cell.classList.remove('pencil-marks', 'guide-cell');
     cell.textContent = answer;
     cell.classList.add('hint-reveal');
     setTimeout(() => cell.classList.remove('hint-reveal'), 400);
 
-    showMessage(`Hint: ${answer} at R${r + 1}C${c + 1}. (−${HINT_PENALTY} pts)`, false);
+    showMessage(`Hint: ${answer} at R${targetR + 1}C${targetC + 1}. (−${HINT_PENALTY} pts)`, false);
     updateNumpadCounts();
     updateHintButton();
     updateScoreDisplay();
@@ -629,6 +650,10 @@
 
   function checkBoard() {
     if (paused || solved) return;
+    if (currentChallenge && currentChallenge.size === 4) {
+      showMessage('Use the guide cell in learn mode.', false);
+      return;
+    }
     checks++;
     const errors = Sudoku.getErrors(puzzle);
     clearHighlights();
@@ -639,12 +664,12 @@
       showMessage(empty ? 'No errors so far.' : 'Perfect.', false);
     } else {
       errors.forEach(i => cells[i].classList.add('error'));
-      showMessage(`${errors.size / 2} conflict${errors.size > 2 ? 's' : ''} found. (−50 pts)`, true);
+      showMessage(`${Math.floor(errors.size / 2)} conflict${errors.size > 2 ? 's' : ''} found. (−50 pts)`, true);
     }
   }
 
   function solveBoard() {
-    if (paused) return;
+    if (paused || isLearnMode) return;
     solved = true;
     puzzle = solution.map(r => [...r]);
     renderBoard();
@@ -721,7 +746,8 @@
 
   boardEl.addEventListener('keydown', (e) => {
     if (paused || solved) return;
-    if (e.key >= '1' && e.key <= '9') {
+    const maxNum = (currentChallenge && currentChallenge.maxNum) || 9;
+    if (e.key >= '1' && e.key <= String(maxNum)) {
       placeNumber(parseInt(e.key));
       e.preventDefault();
     } else if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -735,7 +761,18 @@
     if (e.key === 'h' || e.key === 'H') useHint();
   });
 
-  window.addEventListener('beforeunload', () => { stopTimer(); saveSession(); });
+  window.addEventListener('beforeunload', () => {
+    stopTimer();
+    clearTimeout(saveTimeout);
+    if (!solved) {
+      const data = {
+        puzzle, solution, given, difficulty,
+        seconds, checks, activeNum, hints, maxHints,
+        streak, isLearnMode
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    }
+  });
 
   // ── Welcome screen ──────────────────────────────────────────────
 

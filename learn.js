@@ -107,16 +107,8 @@ const Learn = (() => {
     const ch = CHALLENGES.find(c => c.id === id);
     if (!ch) return null;
     if (ch.puzzle) return { ...ch };
-    // Generate 9×9 puzzle with specified clue count
-    const result = Sudoku.generate(cluesDifficulty(ch.clues));
+    const result = Sudoku.generate(ch.clues);
     return { ...ch, puzzle: result.puzzle, solution: result.solution };
-  }
-
-  function cluesDifficulty(clues) {
-    if (clues >= 50) return 'learn';
-    if (clues >= 38) return 'easy';
-    if (clues >= 30) return 'medium';
-    return 'hard';
   }
 
   function calcStars(seconds, usedHints) {

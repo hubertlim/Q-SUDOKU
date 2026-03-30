@@ -680,7 +680,13 @@ h1 .dim { color: var(--text-dim); }
   width: 90vw;
   max-height: 85dvh;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
+
+#learn-panel::-webkit-scrollbar { width: 6px; }
+#learn-panel::-webkit-scrollbar-track { background: transparent; }
+#learn-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 #learn-header {
   display: flex;
@@ -941,6 +947,11 @@ h1 .dim { color: var(--text-dim); }
 /* ── Mobile: vertical compact layout ────────────────────────── */
 
 @media (max-width: 640px) {
+  #welcome-inner { padding: 1.2rem; gap: 1.5rem; }
+  #welcome-logo { width: 64px; height: 64px; font-size: 2rem; }
+  #welcome-title { font-size: 1.3rem; }
+  .w-diff { padding: 0.3rem 0.9rem; }
+
   #app {
     padding: 0.6rem 0.5rem;
     gap: 0.5rem;
