@@ -202,7 +202,7 @@ const Sudoku = (() => {
     return grid;
   }
 
-  const CLUES = { learn: 50, easy: 38, medium: 30, hard: 24 };
+  const CLUES = { easy: 38, medium: 30, hard: 24 };
 
   function generate(difficulty = 'easy') {
     const solution = generateFull();

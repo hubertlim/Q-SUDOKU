@@ -14,7 +14,7 @@ jobs:
 
       - name: Check required files
         run: |
-          for f in index.html style.css sudoku.js app.js; do
+          for f in index.html style.css sudoku.js learn.js app.js; do
             [ -f "$f" ] || { echo "::error::Missing $f"; exit 1; }
           done
 

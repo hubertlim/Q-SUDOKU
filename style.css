@@ -488,7 +488,125 @@ h1 .dim { color: var(--text-dim); }
   animation: reveal-pop 0.4s ease-out;
 }
 
-/* ── Learn mode ─────────────────────────────────────────────── */
+/* ── Learn challenge system ──────────────────────────────────── */
+
+#learn-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+#learn-overlay[hidden] { display: none; }
+
+#learn-panel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem;
+  max-width: 480px;
+  width: 90vw;
+  max-height: 85dvh;
+  overflow-y: auto;
+}
+
+#learn-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+#learn-header h2 {
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: var(--success);
+  flex: 1;
+}
+#learn-stars-total { font-size: 0.7rem; color: var(--text-dim); }
+#learn-close {
+  background: none; border: none; color: var(--text-dim);
+  font-size: 1rem; cursor: pointer; padding: 0.2rem;
+}
+#learn-close:hover { color: var(--text); }
+
+.learn-stage-label {
+  font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: 0.1em; margin: 0.8rem 0 0.4rem;
+}
+.learn-stage-label:first-child { margin-top: 0; }
+
+.learn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem; }
+
+.challenge-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 0.5rem 0.3rem;
+  cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.challenge-card:hover { border-color: var(--accent); background: var(--surface-hover); }
+.challenge-card.locked { opacity: 0.3; pointer-events: none; }
+.challenge-card.completed { border-color: var(--success); }
+.challenge-card .ch-num { font-size: 0.85rem; color: var(--text); font-weight: 600; }
+.challenge-card .ch-title {
+  font-size: 0.45rem; color: var(--text-dim); margin-top: 0.1rem;
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.challenge-card .ch-stars { font-size: 0.55rem; margin-top: 0.15rem; }
+
+#learn-lesson { padding: 0.5rem 0; }
+#learn-lesson[hidden] { display: none; }
+#lesson-badge {
+  font-size: 0.6rem; color: var(--accent-glow); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 0.3rem;
+}
+#lesson-title { font-size: 1rem; font-weight: 400; color: var(--text); margin-bottom: 0.5rem; }
+#lesson-desc { font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 0.5rem; }
+.tip {
+  font-size: 0.7rem; color: var(--success); padding: 0.5rem 0.6rem;
+  background: var(--surface); border-left: 3px solid var(--success);
+  border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 0.8rem;
+}
+#lesson-start, #lesson-back {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  padding: 0.45rem 1rem; border-radius: var(--radius); font-family: inherit;
+  font-size: 0.75rem; cursor: pointer; transition: all 0.2s; margin-right: 0.4rem;
+}
+#lesson-start { background: var(--success); color: var(--bg); border-color: var(--success); }
+#lesson-start:hover { opacity: 0.9; }
+#lesson-back:hover { border-color: var(--accent); }
+
+/* 4×4 board override */
+#board.board-4 {
+  grid-template-columns: repeat(4, var(--cell));
+  grid-template-rows: repeat(4, var(--cell));
+}
+#board.board-4 .cell:nth-child(2n) { border-right: 2px solid var(--border-box); }
+#board.board-4 .cell:nth-child(4n) { border-right: none; }
+#board.board-4 .cell:nth-child(3n) { border-right: 1px solid var(--border); }
+#board.board-4 .cell:nth-child(n+5):nth-child(-n+8) { border-bottom: 2px solid var(--border-box); }
+
+/* Challenge info bar */
+#challenge-bar {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--success);
+  border-radius: var(--radius);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+}
+#challenge-bar.visible { display: flex; }
+#challenge-bar .ch-info { color: var(--success); }
+#challenge-bar .ch-tip-btn {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; font-size: 0.65rem; font-family: inherit;
+}
+#challenge-bar .ch-tip-btn:hover { color: var(--accent); }
 
 .cell.pencil-marks {
   font-size: calc(var(--cell) * 0.18);

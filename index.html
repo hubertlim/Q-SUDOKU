@@ -36,6 +36,10 @@
         </div>
       </div>
       <aside id="sidebar">
+        <div id="challenge-bar">
+          <span class="ch-info" id="ch-bar-info"></span>
+          <button class="ch-tip-btn" id="ch-bar-tip">💡 Tip</button>
+        </div>
         <div id="score-bar">
           <span id="score-label">Score</span>
           <span id="score-value">0</span>
@@ -69,7 +73,6 @@
           <button id="btn-solve">Solve</button>
         </div>
         <div id="best-scores">
-          <span class="best" data-diff="learn">L: —</span>
           <span class="best" data-diff="easy">E: —</span>
           <span class="best" data-diff="medium">M: —</span>
           <span class="best" data-diff="hard">H: —</span>
@@ -77,8 +80,29 @@
       </aside>
     </div>
     <div id="message" role="status" aria-live="polite"></div>
+
+    <!-- Learn challenge overlay -->
+    <div id="learn-overlay" hidden>
+      <div id="learn-panel">
+        <div id="learn-header">
+          <h2>Learn Sudoku</h2>
+          <span id="learn-stars-total">⭐ 0 / 36</span>
+          <button id="learn-close" aria-label="Close">✕</button>
+        </div>
+        <div id="learn-stages"></div>
+        <div id="learn-lesson" hidden>
+          <div id="lesson-badge"></div>
+          <h3 id="lesson-title"></h3>
+          <p id="lesson-desc"></p>
+          <p id="lesson-tip" class="tip"></p>
+          <button id="lesson-start">Start Challenge</button>
+          <button id="lesson-back">← Back</button>
+        </div>
+      </div>
+    </div>
   </main>
   <script src="sudoku.js"></script>
+  <script src="learn.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

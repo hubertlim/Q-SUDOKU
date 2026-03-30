@@ -27,7 +27,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir _site
-          cp index.html style.css sudoku.js app.js .nojekyll _site/
+          cp index.html style.css sudoku.js learn.js app.js .nojekyll _site/
 
       - uses: actions/upload-pages-artifact@v3
         with:
