@@ -20,6 +20,7 @@
         cell.dataset.c = c;
         cell.setAttribute('role', 'gridcell');
         cell.setAttribute('tabindex', '0');
+        const v = puzzle[r][c];
         cell.setAttribute('aria-label', `Row ${r + 1}, Column ${c + 1}${v ? ', value ' + v : ', empty'}`);
 
         if (v) {
