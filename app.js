@@ -2,10 +2,12 @@
   const boardEl = document.getElementById('board');
   const messageEl = document.getElementById('message');
   const timerEl = document.getElementById('timer');
+  const numBtns = document.querySelectorAll('.num-btn');
 
   let puzzle, solution, selected = null, timerInterval, seconds = 0;
   let difficulty = 'easy';
   let cells = [];
+  let activeNum = 0; // currently selected number on numpad
 
   // ── Board rendering ────────────────────────────────────────────
 
@@ -21,7 +23,8 @@
         cell.setAttribute('role', 'gridcell');
         cell.setAttribute('tabindex', '0');
         const v = puzzle[r][c];
-        cell.setAttribute('aria-label', `Row ${r + 1}, Column ${c + 1}${v ? ', value ' + v : ', empty'}`);
+        cell.setAttribute('aria-label',
+          `Row ${r + 1}, Column ${c + 1}${v ? ', value ' + v : ', empty'}`);
 
         if (v) {
           cell.textContent = v;
@@ -30,21 +33,33 @@
           cell.classList.add('input');
         }
 
-        cell.addEventListener('click', () => selectCell(r, c));
+        cell.addEventListener('click', () => onCellClick(r, c));
         cell.addEventListener('keydown', handleCellKey);
         boardEl.appendChild(cell);
         cells.push(cell);
       }
     }
+    updateNumpadCounts();
   }
 
   function getCell(r, c) { return cells[r * 9 + c]; }
+
+  // ── Cell interaction ───────────────────────────────────────────
+
+  function onCellClick(r, c) {
+    selectCell(r, c);
+    // If a numpad number is active, place it immediately (speed mode)
+    if (activeNum > 0 && !getCell(r, c).classList.contains('given')) {
+      placeNumber(activeNum);
+    }
+  }
 
   function selectCell(r, c) {
     clearHighlights();
     selected = { r, c };
     const cell = getCell(r, c);
     cell.classList.add('selected');
+    cell.focus();
 
     // Highlight row, col, box
     for (let i = 0; i < 9; i++) {
@@ -84,10 +99,10 @@
     puzzle[r][c] = num;
     cell.textContent = num || '';
     cell.classList.add('pop');
-    setTimeout(() => cell.classList.remove('pop'), 200);
+    setTimeout(() => cell.classList.remove('pop'), 150);
 
-    // Re-select to update highlights
     selectCell(r, c);
+    updateNumpadCounts();
     checkWin();
   }
 
@@ -107,6 +122,47 @@
     else handled = false;
 
     if (handled) e.preventDefault();
+  }
+
+  // ── Numpad state ───────────────────────────────────────────────
+
+  function updateNumpadCounts() {
+    const counts = new Array(10).fill(0);
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const v = puzzle[r][c];
+        if (v) counts[v]++;
+      }
+    }
+
+    numBtns.forEach(btn => {
+      const num = parseInt(btn.dataset.num);
+      if (num === 0) return; // erase button
+      const remaining = 9 - counts[num];
+
+      // Update or create count badge
+      let badge = btn.querySelector('.count');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'count';
+        btn.appendChild(badge);
+      }
+      badge.textContent = remaining;
+
+      // Mark completed numbers
+      btn.classList.toggle('completed', remaining <= 0);
+    });
+  }
+
+  function setActiveNum(num) {
+    if (activeNum === num) {
+      activeNum = 0; // toggle off
+    } else {
+      activeNum = num;
+    }
+    numBtns.forEach(btn => {
+      btn.classList.toggle('active-num', parseInt(btn.dataset.num) === activeNum && activeNum > 0);
+    });
   }
 
   // ── Timer ──────────────────────────────────────────────────────
@@ -132,6 +188,8 @@
     messageEl.textContent = '';
     messageEl.className = '';
     boardEl.classList.remove('won');
+    activeNum = 0;
+    numBtns.forEach(btn => btn.classList.remove('active-num'));
     const result = Sudoku.generate(difficulty);
     puzzle = result.puzzle;
     solution = result.solution;
@@ -190,15 +248,30 @@
     });
   });
 
-  document.querySelectorAll('.num-btn').forEach(btn => {
-    btn.addEventListener('click', () => placeNumber(parseInt(btn.dataset.num)));
+  numBtns.forEach(btn => {
+    const num = parseInt(btn.dataset.num);
+    btn.addEventListener('click', () => {
+      if (num === 0) {
+        // Erase: always place immediately, no toggle
+        placeNumber(0);
+        return;
+      }
+      setActiveNum(num);
+      // Also place immediately if a cell is selected
+      if (selected && activeNum > 0) {
+        const cell = getCell(selected.r, selected.c);
+        if (!cell.classList.contains('given')) {
+          placeNumber(activeNum);
+        }
+      }
+    });
   });
 
   document.getElementById('btn-new').addEventListener('click', newGame);
   document.getElementById('btn-check').addEventListener('click', checkBoard);
   document.getElementById('btn-solve').addEventListener('click', solveBoard);
 
-  // Keyboard input only when board area is focused
+  // Keyboard input when board is focused
   boardEl.addEventListener('keydown', (e) => {
     if (e.key >= '1' && e.key <= '9') {
       placeNumber(parseInt(e.key));
@@ -209,7 +282,6 @@
     }
   });
 
-  // Clean up timer on page unload
   window.addEventListener('beforeunload', stopTimer);
 
   // ── Init ───────────────────────────────────────────────────────
