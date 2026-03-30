@@ -19,10 +19,10 @@
   --radius: 8px;
   --grad1: rgba(108, 92, 231, 0.04);
   --grad2: rgba(162, 155, 254, 0.03);
-  --selected-bg: rgba(108, 92, 231, 0.28);
-  --highlight-bg: rgba(108, 92, 231, 0.08);
-  --same-bg: rgba(162, 155, 254, 0.18);
-  --error-bg: rgba(255, 107, 107, 0.08);
+  --selected-bg: rgba(108, 92, 231, 0.30);
+  --highlight-bg: rgba(108, 92, 231, 0.12);
+  --same-bg: rgba(162, 155, 254, 0.22);
+  --error-bg: rgba(255, 107, 107, 0.12);
   --glow1: rgba(108, 92, 231, 0.3);
   --glow2: rgba(162, 155, 254, 0.5);
   --board-shadow: rgba(108, 92, 231, 0.06);
@@ -46,10 +46,10 @@
   --success: #a3be8c;
   --grad1: rgba(136, 192, 208, 0.05);
   --grad2: rgba(143, 188, 187, 0.04);
-  --selected-bg: rgba(136, 192, 208, 0.25);
-  --highlight-bg: rgba(136, 192, 208, 0.08);
-  --same-bg: rgba(143, 188, 187, 0.18);
-  --error-bg: rgba(191, 97, 106, 0.1);
+  --selected-bg: rgba(136, 192, 208, 0.30);
+  --highlight-bg: rgba(136, 192, 208, 0.14);
+  --same-bg: rgba(143, 188, 187, 0.24);
+  --error-bg: rgba(191, 97, 106, 0.15);
   --glow1: rgba(136, 192, 208, 0.3);
   --glow2: rgba(143, 188, 187, 0.5);
   --board-shadow: rgba(136, 192, 208, 0.06);
@@ -73,10 +73,10 @@
   --success: #9ccfd8;
   --grad1: rgba(235, 111, 146, 0.04);
   --grad2: rgba(235, 188, 186, 0.03);
-  --selected-bg: rgba(235, 111, 146, 0.22);
-  --highlight-bg: rgba(235, 111, 146, 0.07);
-  --same-bg: rgba(235, 188, 186, 0.15);
-  --error-bg: rgba(235, 111, 146, 0.1);
+  --selected-bg: rgba(235, 111, 146, 0.28);
+  --highlight-bg: rgba(235, 111, 146, 0.12);
+  --same-bg: rgba(235, 188, 186, 0.22);
+  --error-bg: rgba(235, 111, 146, 0.15);
   --glow1: rgba(235, 111, 146, 0.3);
   --glow2: rgba(235, 188, 186, 0.5);
   --board-shadow: rgba(235, 111, 146, 0.06);
@@ -91,19 +91,19 @@
   --border-box: #8a8478;
   --accent: #7c6f5b;
   --accent-glow: #5c5347;
-  --accent-dim: rgba(124, 111, 91, 0.12);
+  --accent-dim: rgba(124, 111, 91, 0.15);
   --text: #3a3530;
   --text-dim: #9a9488;
   --given: #2a2520;
   --input: #7c6f5b;
   --error: #c44040;
   --success: #5a8a5a;
-  --grad1: rgba(124, 111, 91, 0.04);
-  --grad2: rgba(92, 83, 71, 0.03);
-  --selected-bg: rgba(124, 111, 91, 0.18);
-  --highlight-bg: rgba(124, 111, 91, 0.07);
-  --same-bg: rgba(124, 111, 91, 0.12);
-  --error-bg: rgba(196, 64, 64, 0.08);
+  --grad1: rgba(124, 111, 91, 0.06);
+  --grad2: rgba(92, 83, 71, 0.04);
+  --selected-bg: rgba(124, 111, 91, 0.28);
+  --highlight-bg: rgba(124, 111, 91, 0.13);
+  --same-bg: rgba(124, 111, 91, 0.20);
+  --error-bg: rgba(196, 64, 64, 0.12);
   --glow1: rgba(124, 111, 91, 0.2);
   --glow2: rgba(92, 83, 71, 0.3);
   --board-shadow: rgba(0, 0, 0, 0.05);
@@ -120,7 +120,7 @@ html {
 
 body {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
-  background: var(--bg);
+  background-color: var(--bg);
   background-image:
     radial-gradient(ellipse at 20% 50%, var(--grad1) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 50%, var(--grad2) 0%, transparent 60%);
