@@ -744,12 +744,29 @@ h1 .dim { color: var(--text-dim); }
   background: var(--surface); border-left: 3px solid var(--success);
   border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 0.8rem;
 }
-#lesson-start, #lesson-back {
-  background: var(--surface); color: var(--text); border: 1px solid var(--border);
-  padding: 0.45rem 1rem; border-radius: var(--radius); font-family: inherit;
-  font-size: 0.75rem; cursor: pointer; transition: all 0.2s; margin-right: 0.4rem;
+#lesson-actions {
+  display: flex;
+  gap: 0.5rem;
 }
-#lesson-start { background: var(--success); color: var(--bg); border-color: var(--success); }
+#lesson-start, #lesson-back {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+#lesson-back { flex: 1; }
+#lesson-start {
+  flex: 2;
+  background: var(--success);
+  color: var(--bg);
+  border-color: var(--success);
+}
 #lesson-start:hover { opacity: 0.9; }
 #lesson-back:hover { border-color: var(--accent); }
 
@@ -1061,19 +1078,18 @@ h1 .dim { color: var(--text-dim); }
   #learn-header h2 { font-size: 0.85rem; }
   #learn-stars-total { font-size: 0.6rem; }
 
-  .learn-grid { gap: 0.25rem; }
+  .learn-grid { gap: 0.25rem; grid-template-columns: repeat(3, 1fr); }
   .challenge-card { padding: 0.4rem 0.2rem; }
-  .challenge-card .ch-num { font-size: 0.75rem; }
-  .challenge-card .ch-title { font-size: 0.4rem; }
+  .challenge-card .ch-num { font-size: 0.8rem; }
+  .challenge-card .ch-title { font-size: 0.42rem; }
   .challenge-card .ch-stars { font-size: 0.5rem; }
 
   #lesson-desc { font-size: 0.7rem; }
   .tip { font-size: 0.65rem; padding: 0.4rem 0.5rem; }
+  #lesson-actions { gap: 0.35rem; }
   #lesson-start, #lesson-back {
     font-size: 0.7rem;
-    padding: 0.4rem 0.8rem;
-    margin-right: 0.3rem;
-    margin-bottom: 0.3rem;
+    padding: 0.4rem 0;
   }
 
   /* Mini game on mobile */
