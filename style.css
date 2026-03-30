@@ -746,84 +746,58 @@ h1 .dim { color: var(--text-dim); }
 }
 #lesson-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
-#lesson-start, #lesson-back {
+#lesson-back { flex: 1; }
+#lesson-start { flex: 2; }
+
+/* Unified learn button — mirrors #actions button */
+.learn-btn {
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   padding: 0.5rem 0;
   border-radius: var(--radius);
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   cursor: pointer;
+  letter-spacing: 0.04em;
   transition: all 0.2s;
   text-align: center;
 }
-#lesson-back { flex: 1; }
-#lesson-start {
-  flex: 2;
-  background: var(--success);
-  color: var(--bg);
-  border-color: var(--success);
+.learn-btn:hover { border-color: var(--accent); background: var(--surface-hover); }
+.learn-btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
-#lesson-start:hover { opacity: 0.9; }
-#lesson-back:hover { border-color: var(--accent); }
+.learn-btn-primary:hover {
+  box-shadow: 0 0 12px var(--glow1);
+  background: var(--accent);
+}
+.learn-btn[hidden] { display: none; }
 
 /* Learn completion view */
 #learn-complete { text-align: center; padding: 1.5rem 0; }
 #learn-complete[hidden] { display: none; }
 #complete-stars { font-size: 2rem; margin-bottom: 0.5rem; }
-#complete-title {
-  font-size: 1rem; font-weight: 400; color: var(--text);
-  margin-bottom: 0.3rem;
-}
-#complete-msg {
-  font-size: 0.7rem; color: var(--text-dim);
-  margin-bottom: 1rem; line-height: 1.4;
-}
-#complete-actions {
-  display: flex; gap: 0.5rem;
-}
-#complete-back, #complete-next {
-  flex: 1;
-  background: var(--surface); color: var(--text);
-  border: 1px solid var(--border);
-  padding: 0.5rem 0; border-radius: var(--radius);
-  font-family: inherit; font-size: 0.75rem;
-  cursor: pointer; transition: all 0.2s; text-align: center;
-}
-#complete-next {
-  background: var(--success); color: var(--bg);
-  border-color: var(--success);
-}
-#complete-next:hover { opacity: 0.9; }
-#complete-back:hover { border-color: var(--accent); }
-#complete-next[hidden] { display: none; }
+#complete-title { font-size: 1rem; font-weight: 400; color: var(--text); margin-bottom: 0.3rem; }
+#complete-msg { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 1rem; line-height: 1.4; }
+#complete-actions { display: flex; gap: 0.35rem; }
+#complete-back { flex: 1; }
+#complete-next { flex: 2; }
 
-/* Challenge done bar (on game screen) */
+/* Challenge done bar */
 #challenge-done {
   display: none;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   flex-shrink: 0;
   animation: pop 0.2s ease-out;
 }
 #challenge-done:not([hidden]) { display: flex; }
-#done-next, #done-list {
-  background: var(--surface); color: var(--text);
-  border: 1px solid var(--border);
-  padding: 0.35rem 1rem; border-radius: var(--radius);
-  font-family: inherit; font-size: 0.7rem;
-  cursor: pointer; transition: all 0.2s;
-}
-#done-next {
-  background: var(--success); color: var(--bg);
-  border-color: var(--success);
-}
-#done-next:hover { opacity: 0.9; }
-#done-list:hover { border-color: var(--accent); }
-#done-next[hidden] { display: none; }
+#done-next { flex: 2; }
+#done-list { flex: 1; }
 
 /* 4×4 board override */
 #board.board-4 {
@@ -1044,6 +1018,7 @@ h1 .dim { color: var(--text-dim); }
 .num-btn:focus-visible,
 .diff-btn:focus-visible,
 #actions button:focus-visible,
+.learn-btn:focus-visible,
 .theme-dot:focus-visible {
   outline: 2px solid var(--accent-glow);
   outline-offset: -2px;
@@ -1141,11 +1116,8 @@ h1 .dim { color: var(--text-dim); }
 
   #lesson-desc { font-size: 0.7rem; }
   .tip { font-size: 0.65rem; padding: 0.4rem 0.5rem; }
-  #lesson-actions { gap: 0.35rem; }
-  #lesson-start, #lesson-back {
-    font-size: 0.7rem;
-    padding: 0.4rem 0;
-  }
+  #lesson-actions { gap: 0.25rem; }
+  .learn-btn { font-size: 0.65rem; padding: 0.4rem 0; }
 
   /* Mini game on mobile */
   #game.game-mini #numpad {
