@@ -68,7 +68,6 @@
 
   function onCellClick(r, c) {
     selectCell(r, c);
-    // If a numpad number is active, place it immediately (speed mode)
     if (activeNum > 0 && !getCell(r, c).classList.contains('given')) {
       placeNumber(activeNum);
     }
@@ -81,7 +80,6 @@
     cell.classList.add('selected');
     cell.focus();
 
-    // Highlight row, col, box
     for (let i = 0; i < 9; i++) {
       if (i !== c) getCell(r, i).classList.add('highlight');
       if (i !== r) getCell(i, c).classList.add('highlight');
@@ -94,7 +92,6 @@
       }
     }
 
-    // Highlight same number
     const v = puzzle[r][c];
     if (v) {
       for (let i = 0; i < 81; i++) {
@@ -157,10 +154,9 @@
 
     numBtns.forEach(btn => {
       const num = parseInt(btn.dataset.num);
-      if (num === 0) return; // erase button
+      if (num === 0) return; 
       const remaining = 9 - counts[num];
 
-      // Update or create count badge
       let badge = btn.querySelector('.count');
       if (!badge) {
         badge = document.createElement('span');
@@ -168,15 +164,13 @@
         btn.appendChild(badge);
       }
       badge.textContent = remaining;
-
-      // Mark completed numbers
       btn.classList.toggle('completed', remaining <= 0);
     });
   }
 
   function setActiveNum(num) {
     if (activeNum === num) {
-      activeNum = 0; // toggle off
+      activeNum = 0;
     } else {
       activeNum = num;
     }
@@ -272,12 +266,10 @@
     const num = parseInt(btn.dataset.num);
     btn.addEventListener('click', () => {
       if (num === 0) {
-        // Erase: always place immediately, no toggle
         placeNumber(0);
         return;
       }
       setActiveNum(num);
-      // Also place immediately if a cell is selected
       if (selected && activeNum > 0) {
         const cell = getCell(selected.r, selected.c);
         if (!cell.classList.contains('given')) {

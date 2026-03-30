@@ -8,20 +8,15 @@ on:
 
 jobs:
   validate:
-    name: Validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check files exist
+      - name: Check required files
         run: |
           for f in index.html style.css sudoku.js app.js; do
-            if [ ! -f "$f" ]; then
-              echo "::error::Missing required file: $f"
-              exit 1
-            fi
+            [ -f "$f" ] || { echo "::error::Missing $f"; exit 1; }
           done
-          echo "All required files present."
 
-      - name: Docker build test
+      - name: Docker build
         run: docker build -t q-sudoku-test .

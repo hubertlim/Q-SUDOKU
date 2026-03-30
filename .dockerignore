@@ -1,11 +1,11 @@
 .git
-.gitignore
-.dockerignore
+.github
 .vscode
 .idea
-README.md
-LICENSE
+.gitignore
+.dockerignore
+.nojekyll
+*.md
 Dockerfile
 docker-compose.yml
 docker-compose.override.yml
-*.md

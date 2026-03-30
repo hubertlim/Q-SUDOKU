@@ -1,46 +1,37 @@
 /**
  * Q-SUDOKU Engine
- * 
- * Solver: Backtracking + constraint propagation with bitmask optimization.
- *   - Each row, col, box tracks used digits as a 9-bit mask.
- *   - Candidate lookup is O(1) via bitwise AND.
- *   - MRV heuristic: always branch on the cell with fewest candidates.
  *
- * Generator: Fill grid via randomized backtracking, then remove clues
- *   symmetrically while verifying unique solution (solution count ≤ 1).
+ * Solver:    Backtracking + bitmask constraints + MRV heuristic
+ * Generator: Randomized fill → clue removal with uniqueness check
  */
 const Sudoku = (() => {
   const N = 9;
-  const ALL = 0x1FF; // bits 0..8 = digits 1..9
+  const ALL = 0x1FF;
 
-  // Which 3x3 box does (r,c) belong to?
   const boxIdx = (r, c) => (Math.floor(r / 3) * 3 + Math.floor(c / 3));
 
-  // Count set bits (popcount)
   const popcount = (x) => {
     let c = 0;
     while (x) { c++; x &= x - 1; }
     return c;
   };
 
-  // Lowest set bit position (0-indexed) → digit = pos + 1
   const lowestBit = (x) => {
     let pos = 0;
     while (!((x >> pos) & 1)) pos++;
     return pos;
   };
 
-  // Iterate set bits, yielding digit values (1-9)
   function* iterBits(mask) {
     let m = mask;
     while (m) {
-      const bit = m & (-m);       // isolate lowest set bit
-      yield lowestBit(bit) + 1;   // digit
-      m ^= bit;                   // clear it
+      const bit = m & (-m);
+      yield lowestBit(bit) + 1;
+      m ^= bit;
     }
   }
 
-  // ── Solver with bitmask + MRV ──────────────────────────────────
+  // ── Solver ─────────────────────────────────────────────────────
 
   function solve(board) {
     const grid = board.map(r => [...r]);
@@ -48,7 +39,7 @@ const Sudoku = (() => {
     const colMask = new Array(N).fill(0);
     const boxMask = new Array(N).fill(0);
 
-    // Initialize masks from given clues
+    // Init masks
     for (let r = 0; r < N; r++) {
       for (let c = 0; c < N; c++) {
         const v = grid[r][c];
@@ -105,7 +96,7 @@ const Sudoku = (() => {
     return bt() ? grid : null;
   }
 
-  // ── Solution counter (stops at 2 to check uniqueness) ─────────
+  // ── Solution counter (stops at limit) ──────────────────────────
 
   function countSolutions(board, limit = 2) {
     const grid = board.map(r => [...r]);
@@ -218,7 +209,7 @@ const Sudoku = (() => {
     const puzzle = solution.map(r => [...r]);
     const target = 81 - (CLUES[difficulty] || 38);
 
-    // Build list of all positions, shuffled
+    // Build shuffled position list
     const positions = shuffle(
       Array.from({ length: 81 }, (_, i) => [Math.floor(i / 9), i % 9])
     );
@@ -247,21 +238,18 @@ const Sudoku = (() => {
       for (let c = 0; c < N; c++) {
         const v = board[r][c];
         if (!v) continue;
-        // Check row
         for (let c2 = 0; c2 < N; c2++) {
           if (c2 !== c && board[r][c2] === v) {
             errors.add(r * 9 + c);
             errors.add(r * 9 + c2);
           }
         }
-        // Check col
         for (let r2 = 0; r2 < N; r2++) {
           if (r2 !== r && board[r2][c] === v) {
             errors.add(r * 9 + c);
             errors.add(r2 * 9 + c);
           }
         }
-        // Check box
         const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
         for (let dr = 0; dr < 3; dr++) {
           for (let dc = 0; dc < 3; dc++) {

@@ -10,3 +10,6 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# Build
+_site/
