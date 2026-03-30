@@ -2,32 +2,120 @@
   const boardEl = document.getElementById('board');
   const messageEl = document.getElementById('message');
   const timerEl = document.getElementById('timer');
+  const scoreEl = document.getElementById('score-value');
+  const pauseOverlay = document.getElementById('pause-overlay');
+  const btnPause = document.getElementById('btn-pause');
   const numBtns = document.querySelectorAll('.num-btn');
   const themeDots = document.querySelectorAll('.theme-dot');
 
-  let puzzle, solution, selected = null, timerInterval, seconds = 0;
-  let difficulty = 'easy';
-  let cells = [];
-  let activeNum = 0;
+  let puzzle, solution, given;
+  let selected = null, timerInterval, seconds = 0;
+  let difficulty = 'easy', cells = [], activeNum = 0;
+  let paused = false, checks = 0, solved = false;
+
+  const SCORE_MULT = { easy: 1000, medium: 2000, hard: 3000 };
+  const SAVE_KEY = 'q-sudoku-save';
+  const BEST_KEY = 'q-sudoku-best';
 
   // ── Theme ──────────────────────────────────────────────────────
 
   function setTheme(name) {
     document.documentElement.setAttribute('data-theme', name);
     localStorage.setItem('q-sudoku-theme', name);
-    themeDots.forEach(dot => {
-      dot.classList.toggle('active', dot.dataset.theme === name);
+    themeDots.forEach(d => d.classList.toggle('active', d.dataset.theme === name));
+  }
+
+  themeDots.forEach(d => d.addEventListener('click', () => setTheme(d.dataset.theme)));
+
+  // ── Scoring ────────────────────────────────────────────────────
+
+  function calcScore() {
+    const base = SCORE_MULT[difficulty] || 1000;
+    const timePenalty = seconds;
+    const checkPenalty = checks * 50;
+    return Math.max(0, base - timePenalty - checkPenalty);
+  }
+
+  function updateScoreDisplay() {
+    scoreEl.textContent = calcScore();
+  }
+
+  function loadBestScores() {
+    const data = JSON.parse(localStorage.getItem(BEST_KEY) || '{}');
+    ['easy', 'medium', 'hard'].forEach(d => {
+      const el = document.querySelector(`.best[data-diff="${d}"]`);
+      const prefix = d[0].toUpperCase();
+      el.textContent = data[d] != null ? `${prefix}: ${data[d]}` : `${prefix}: —`;
     });
   }
 
-  function initTheme() {
-    const saved = localStorage.getItem('q-sudoku-theme') || 'midnight';
-    setTheme(saved);
+  function saveBestScore(score) {
+    const data = JSON.parse(localStorage.getItem(BEST_KEY) || '{}');
+    if (data[difficulty] == null || score > data[difficulty]) {
+      data[difficulty] = score;
+      localStorage.setItem(BEST_KEY, JSON.stringify(data));
+    }
+    loadBestScores();
   }
 
-  themeDots.forEach(dot => {
-    dot.addEventListener('click', () => setTheme(dot.dataset.theme));
-  });
+  // ── Save / Restore ─────────────────────────────────────────────
+
+  function saveSession() {
+    if (solved) { localStorage.removeItem(SAVE_KEY); return; }
+    const data = {
+      puzzle, solution, given, difficulty,
+      seconds, checks, activeNum
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  }
+
+  function loadSession() {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      puzzle = data.puzzle;
+      solution = data.solution;
+      given = data.given;
+      difficulty = data.difficulty;
+      seconds = data.seconds || 0;
+      checks = data.checks || 0;
+      activeNum = data.activeNum || 0;
+      solved = false;
+
+      document.querySelectorAll('.diff-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.diff === difficulty);
+      });
+      return true;
+    } catch { return false; }
+  }
+
+  // ── Pause ──────────────────────────────────────────────────────
+
+  function togglePause() {
+    if (solved) return;
+    paused = !paused;
+    if (paused) {
+      clearInterval(timerInterval);
+      pauseOverlay.hidden = false;
+      btnPause.textContent = '▶';
+      btnPause.classList.add('paused');
+    } else {
+      resumeTimer();
+      pauseOverlay.hidden = true;
+      btnPause.textContent = '⏸';
+      btnPause.classList.remove('paused');
+    }
+  }
+
+  function resumeTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      seconds++;
+      updateTimer();
+      updateScoreDisplay();
+    }, 1000);
+  }
 
   // ── Board rendering ────────────────────────────────────────────
 
@@ -46,9 +134,12 @@
         cell.setAttribute('aria-label',
           `Row ${r + 1}, Column ${c + 1}${v ? ', value ' + v : ', empty'}`);
 
-        if (v) {
+        if (given[r][c]) {
           cell.textContent = v;
           cell.classList.add('given');
+        } else if (v) {
+          cell.textContent = v;
+          cell.classList.add('input');
         } else {
           cell.classList.add('input');
         }
@@ -60,6 +151,7 @@
       }
     }
     updateNumpadCounts();
+    updateScoreDisplay();
   }
 
   function getCell(r, c) { return cells[r * 9 + c]; }
@@ -67,8 +159,9 @@
   // ── Cell interaction ───────────────────────────────────────────
 
   function onCellClick(r, c) {
+    if (paused || solved) return;
     selectCell(r, c);
-    if (activeNum > 0 && !getCell(r, c).classList.contains('given')) {
+    if (activeNum > 0 && !given[r][c]) {
       placeNumber(activeNum);
     }
   }
@@ -108,31 +201,31 @@
   }
 
   function placeNumber(num) {
-    if (!selected) return;
+    if (!selected || paused || solved) return;
     const { r, c } = selected;
-    const cell = getCell(r, c);
-    if (cell.classList.contains('given')) return;
+    if (given[r][c]) return;
 
     puzzle[r][c] = num;
+    const cell = getCell(r, c);
     cell.textContent = num || '';
     cell.classList.add('pop');
     setTimeout(() => cell.classList.remove('pop'), 150);
 
     selectCell(r, c);
     updateNumpadCounts();
+    updateScoreDisplay();
+    saveSession();
     checkWin();
   }
 
   function handleCellKey(e) {
-    if (!selected) return;
+    if (!selected || paused || solved) return;
     const { r, c } = selected;
     let handled = true;
 
-    if (e.key >= '1' && e.key <= '9') {
-      placeNumber(parseInt(e.key));
-    } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
-      placeNumber(0);
-    } else if (e.key === 'ArrowUp' && r > 0) selectCell(r - 1, c);
+    if (e.key >= '1' && e.key <= '9') placeNumber(parseInt(e.key));
+    else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') placeNumber(0);
+    else if (e.key === 'ArrowUp' && r > 0) selectCell(r - 1, c);
     else if (e.key === 'ArrowDown' && r < 8) selectCell(r + 1, c);
     else if (e.key === 'ArrowLeft' && c > 0) selectCell(r, c - 1);
     else if (e.key === 'ArrowRight' && c < 8) selectCell(r, c + 1);
@@ -147,16 +240,13 @@
     const counts = new Array(10).fill(0);
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
-        const v = puzzle[r][c];
-        if (v) counts[v]++;
+        if (puzzle[r][c]) counts[puzzle[r][c]]++;
       }
     }
-
     numBtns.forEach(btn => {
       const num = parseInt(btn.dataset.num);
-      if (num === 0) return; 
+      if (num === 0) return;
       const remaining = 9 - counts[num];
-
       let badge = btn.querySelector('.count');
       if (!badge) {
         badge = document.createElement('span');
@@ -169,11 +259,7 @@
   }
 
   function setActiveNum(num) {
-    if (activeNum === num) {
-      activeNum = 0;
-    } else {
-      activeNum = num;
-    }
+    activeNum = (activeNum === num) ? 0 : num;
     numBtns.forEach(btn => {
       btn.classList.toggle('active-num', parseInt(btn.dataset.num) === activeNum && activeNum > 0);
     });
@@ -182,10 +268,13 @@
   // ── Timer ──────────────────────────────────────────────────────
 
   function startTimer() {
-    stopTimer();
-    seconds = 0;
+    clearInterval(timerInterval);
     updateTimer();
-    timerInterval = setInterval(() => { seconds++; updateTimer(); }, 1000);
+    timerInterval = setInterval(() => {
+      seconds++;
+      updateTimer();
+      updateScoreDisplay();
+    }, 1000);
   }
 
   function stopTimer() { clearInterval(timerInterval); }
@@ -202,47 +291,82 @@
     messageEl.textContent = '';
     messageEl.className = '';
     boardEl.classList.remove('won');
+    pauseOverlay.hidden = true;
+    paused = false;
+    solved = false;
+    checks = 0;
+    seconds = 0;
     activeNum = 0;
+    btnPause.textContent = '⏸';
+    btnPause.classList.remove('paused');
     numBtns.forEach(btn => btn.classList.remove('active-num'));
+
     const result = Sudoku.generate(difficulty);
     puzzle = result.puzzle;
     solution = result.solution;
+    given = result.puzzle.map(r => r.map(v => v !== 0));
     selected = null;
+
     renderBoard();
     startTimer();
+    saveSession();
+  }
+
+  function restoreGame() {
+    messageEl.textContent = '';
+    messageEl.className = '';
+    boardEl.classList.remove('won');
+    pauseOverlay.hidden = true;
+    paused = false;
+    solved = false;
+    btnPause.textContent = '⏸';
+    btnPause.classList.remove('paused');
+    numBtns.forEach(btn => btn.classList.remove('active-num'));
+    selected = null;
+
+    renderBoard();
+    startTimer();
+    showMessage('Game restored.', false);
   }
 
   function checkBoard() {
+    if (paused || solved) return;
+    checks++;
     const errors = Sudoku.getErrors(puzzle);
     clearHighlights();
+    updateScoreDisplay();
+    saveSession();
     if (errors.size === 0) {
       const empty = puzzle.flat().some(v => v === 0);
-      if (empty) {
-        showMessage('No errors so far, keep going.', false);
-      } else {
-        showMessage('Perfect. You solved it.', false);
-      }
+      showMessage(empty ? 'No errors so far.' : 'Perfect.', false);
     } else {
       errors.forEach(i => cells[i].classList.add('error'));
-      showMessage('Some conflicts found.', true);
+      showMessage(`${errors.size / 2} conflict${errors.size > 2 ? 's' : ''} found. (−50 pts)`, true);
     }
   }
 
   function solveBoard() {
+    if (paused) return;
+    solved = true;
     puzzle = solution.map(r => [...r]);
     renderBoard();
     stopTimer();
-    showMessage('Solved.', false);
+    scoreEl.textContent = '0';
+    localStorage.removeItem(SAVE_KEY);
+    showMessage('Solved. No score awarded.', false);
   }
 
   function checkWin() {
-    const empty = puzzle.flat().some(v => v === 0);
-    if (empty) return;
+    if (puzzle.flat().some(v => v === 0)) return;
     const errors = Sudoku.getErrors(puzzle);
     if (errors.size === 0) {
+      solved = true;
       stopTimer();
       boardEl.classList.add('won');
-      showMessage(`Solved in ${timerEl.textContent}`, false);
+      const score = calcScore();
+      saveBestScore(score);
+      localStorage.removeItem(SAVE_KEY);
+      showMessage(`Solved in ${timerEl.textContent} — Score: ${score}`, false);
     }
   }
 
@@ -265,16 +389,11 @@
   numBtns.forEach(btn => {
     const num = parseInt(btn.dataset.num);
     btn.addEventListener('click', () => {
-      if (num === 0) {
-        placeNumber(0);
-        return;
-      }
+      if (paused || solved) return;
+      if (num === 0) { placeNumber(0); return; }
       setActiveNum(num);
-      if (selected && activeNum > 0) {
-        const cell = getCell(selected.r, selected.c);
-        if (!cell.classList.contains('given')) {
-          placeNumber(activeNum);
-        }
+      if (selected && activeNum > 0 && !given[selected.r][selected.c]) {
+        placeNumber(activeNum);
       }
     });
   });
@@ -282,9 +401,11 @@
   document.getElementById('btn-new').addEventListener('click', newGame);
   document.getElementById('btn-check').addEventListener('click', checkBoard);
   document.getElementById('btn-solve').addEventListener('click', solveBoard);
+  btnPause.addEventListener('click', togglePause);
+  document.getElementById('btn-resume').addEventListener('click', togglePause);
 
-  // Keyboard input when board is focused
   boardEl.addEventListener('keydown', (e) => {
+    if (paused || solved) return;
     if (e.key >= '1' && e.key <= '9') {
       placeNumber(parseInt(e.key));
       e.preventDefault();
@@ -294,9 +415,19 @@
     }
   });
 
-  window.addEventListener('beforeunload', stopTimer);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') togglePause();
+  });
+
+  window.addEventListener('beforeunload', () => { stopTimer(); saveSession(); });
 
   // ── Init ───────────────────────────────────────────────────────
-  initTheme();
-  newGame();
+  setTheme(localStorage.getItem('q-sudoku-theme') || 'midnight');
+  loadBestScores();
+
+  if (loadSession()) {
+    restoreGame();
+  } else {
+    newGame();
+  }
 })();

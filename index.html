@@ -21,14 +21,25 @@
           <button class="theme-dot" data-theme="rose" title="Rosé Pine" aria-label="Rosé Pine theme"><span style="background:#eb6f92"></span></button>
           <button class="theme-dot" data-theme="paper" title="Paper" aria-label="Paper theme"><span style="background:#d4c5a9"></span></button>
         </div>
-        <time id="timer" aria-live="off" aria-label="Elapsed time">00:00</time>
+        <div id="timer-wrap">
+          <time id="timer" aria-live="off" aria-label="Elapsed time">00:00</time>
+          <button id="btn-pause" aria-label="Pause game" title="Pause">⏸</button>
+        </div>
       </div>
     </header>
     <div id="game">
       <div id="board-wrap">
         <div id="board" role="grid" aria-label="Sudoku board"></div>
+        <div id="pause-overlay" hidden>
+          <span>PAUSED</span>
+          <button id="btn-resume">Resume</button>
+        </div>
       </div>
       <aside id="sidebar">
+        <div id="score-bar">
+          <span id="score-label">Score</span>
+          <span id="score-value">0</span>
+        </div>
         <nav id="controls" aria-label="Difficulty selection">
           <button class="diff-btn active" data-diff="easy">Easy</button>
           <button class="diff-btn" data-diff="medium">Medium</button>
@@ -50,6 +61,11 @@
           <button id="btn-new">New</button>
           <button id="btn-check">Check</button>
           <button id="btn-solve">Solve</button>
+        </div>
+        <div id="best-scores">
+          <span class="best" data-diff="easy">E: —</span>
+          <span class="best" data-diff="medium">M: —</span>
+          <span class="best" data-diff="hard">H: —</span>
         </div>
       </aside>
     </div>
