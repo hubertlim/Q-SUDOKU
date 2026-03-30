@@ -580,6 +580,7 @@ h1 .dim { color: var(--text-dim); }
 
 /* 4×4 board override */
 #board.board-4 {
+  --cell: min(calc((100dvh - 12rem) / 5), 72px);
   grid-template-columns: repeat(4, var(--cell));
   grid-template-rows: repeat(4, var(--cell));
 }
@@ -587,6 +588,33 @@ h1 .dim { color: var(--text-dim); }
 #board.board-4 .cell:nth-child(4n) { border-right: none; }
 #board.board-4 .cell:nth-child(3n) { border-right: 1px solid var(--border); }
 #board.board-4 .cell:nth-child(n+5):nth-child(-n+8) { border-bottom: 2px solid var(--border-box); }
+
+/* When in 4×4 challenge, switch #game to centered column layout */
+#game.game-mini {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+#game.game-mini #board-wrap {
+  flex-shrink: 0;
+}
+
+#game.game-mini #sidebar {
+  max-width: 320px;
+  width: 100%;
+  align-items: center;
+}
+
+#game.game-mini #numpad {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 220px;
+}
+
+#game.game-mini .num-btn.erase {
+  grid-column: 1 / -1;
+}
 
 /* Challenge info bar */
 #challenge-bar {
@@ -758,6 +786,10 @@ h1 .dim { color: var(--text-dim); }
 
   #board {
     --cell: min(calc((100vw - 1.5rem) / 9), calc((100dvh - 14rem) / 9));
+  }
+
+  #board.board-4 {
+    --cell: min(calc((100vw - 2rem) / 4.5), 64px);
   }
 
   #sidebar {

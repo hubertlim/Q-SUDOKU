@@ -128,11 +128,14 @@
   // ── Board rendering ────────────────────────────────────────────
 
   function renderBoard() {
+    const gameEl = document.getElementById('game');
     boardEl.innerHTML = '';
     boardEl.className = '';
     cells = [];
     const size = (currentChallenge && currentChallenge.size === 4) ? 4 : 9;
     const maxNum = (currentChallenge && currentChallenge.maxNum) || 9;
+
+    gameEl.classList.toggle('game-mini', size === 4);
     if (size === 4) boardEl.classList.add('board-4');
 
     for (let r = 0; r < size; r++) {
@@ -546,6 +549,7 @@
     currentChallenge = null;
     isLearnMode = false;
     document.getElementById('challenge-bar').classList.remove('visible');
+    document.getElementById('game').classList.remove('game-mini');
     btnPause.textContent = '⏸';
     btnPause.classList.remove('paused');
     numBtns.forEach(btn => btn.classList.remove('active-num'));
