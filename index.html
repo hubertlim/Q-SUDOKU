@@ -11,7 +11,38 @@
 </head>
 <body>
   <noscript>Q-SUDOKU requires JavaScript to run.</noscript>
-  <main id="app">
+
+  <!-- Welcome screen -->
+  <div id="welcome">
+    <div id="welcome-inner">
+      <div id="welcome-brand">
+        <div id="welcome-logo">Q</div>
+        <div id="welcome-title">Q<span class="dim">-</span>SUDOKU</div>
+        <div id="welcome-sub">Logic puzzle, zero fluff</div>
+      </div>
+      <div id="welcome-actions">
+        <button id="w-continue" class="w-btn w-primary" hidden>Continue Game</button>
+        <button id="w-play" class="w-btn w-primary">New Game</button>
+        <button id="w-learn" class="w-btn w-secondary">Learn Sudoku</button>
+      </div>
+      <div id="welcome-diff">
+        <button class="w-diff active" data-diff="easy">Easy</button>
+        <button class="w-diff" data-diff="medium">Medium</button>
+        <button class="w-diff" data-diff="hard">Hard</button>
+      </div>
+      <div id="welcome-footer">
+        <div id="welcome-themes">
+          <button class="theme-dot" data-theme="midnight" title="Midnight" aria-label="Midnight theme"><span style="background:#6c5ce7"></span></button>
+          <button class="theme-dot" data-theme="nord" title="Nord" aria-label="Nord theme"><span style="background:#88c0d0"></span></button>
+          <button class="theme-dot" data-theme="rose" title="Rosé Pine" aria-label="Rosé Pine theme"><span style="background:#eb6f92"></span></button>
+          <button class="theme-dot" data-theme="paper" title="Paper" aria-label="Paper theme"><span style="background:#d4c5a9"></span></button>
+        </div>
+        <div id="welcome-stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <main id="app" hidden>
     <header id="topbar">
       <h1>Q<span class="dim">-</span>SUDOKU</h1>
       <div id="topbar-right">

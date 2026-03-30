@@ -737,13 +737,94 @@
 
   window.addEventListener('beforeunload', () => { stopTimer(); saveSession(); });
 
+  // ── Welcome screen ──────────────────────────────────────────────
+
+  const welcomeEl = document.getElementById('welcome');
+  const appEl = document.getElementById('app');
+  let welcomeDifficulty = localStorage.getItem('q-sudoku-diff') || 'easy';
+
+  function showWelcome() {
+    stopTimer();
+    welcomeEl.hidden = false;
+    welcomeEl.classList.remove('fade-out');
+    appEl.hidden = true;
+
+    // Set active difficulty pill
+    document.querySelectorAll('.w-diff').forEach(b => {
+      b.classList.toggle('active', b.dataset.diff === welcomeDifficulty);
+    });
+
+    // Show/hide continue button
+    const hasSave = !!localStorage.getItem(SAVE_KEY);
+    document.getElementById('w-continue').hidden = !hasSave;
+
+    // Stats line
+    const best = JSON.parse(localStorage.getItem(BEST_KEY) || '{}');
+    const stars = Learn.getTotalStars();
+    const parts = [];
+    if (best.easy != null) parts.push(`E: ${best.easy}`);
+    if (best.medium != null) parts.push(`M: ${best.medium}`);
+    if (best.hard != null) parts.push(`H: ${best.hard}`);
+    if (stars > 0) parts.push(`⭐ ${stars}/${Learn.CHALLENGES.length * 3}`);
+    document.getElementById('welcome-stats').textContent = parts.length ? parts.join('  ·  ') : '';
+
+    // Theme dots in welcome
+    document.querySelectorAll('#welcome-themes .theme-dot').forEach(d => {
+      d.classList.toggle('active', d.dataset.theme ===
+        (localStorage.getItem('q-sudoku-theme') || 'midnight'));
+    });
+  }
+
+  function dismissWelcome(callback) {
+    welcomeEl.classList.add('fade-out');
+    setTimeout(() => {
+      welcomeEl.hidden = true;
+      appEl.hidden = false;
+      if (callback) callback();
+    }, 400);
+  }
+
+  // Welcome difficulty pills
+  document.querySelectorAll('.w-diff').forEach(btn => {
+    btn.addEventListener('click', () => {
+      welcomeDifficulty = btn.dataset.diff;
+      localStorage.setItem('q-sudoku-diff', welcomeDifficulty);
+      document.querySelectorAll('.w-diff').forEach(b => b.classList.toggle('active', b === btn));
+    });
+  });
+
+  // Welcome theme dots
+  document.querySelectorAll('#welcome-themes .theme-dot').forEach(d => {
+    d.addEventListener('click', () => {
+      setTheme(d.dataset.theme);
+      document.querySelectorAll('#welcome-themes .theme-dot').forEach(dd =>
+        dd.classList.toggle('active', dd.dataset.theme === d.dataset.theme));
+    });
+  });
+
+  // Welcome buttons
+  document.getElementById('w-play').addEventListener('click', () => {
+    difficulty = welcomeDifficulty;
+    document.querySelectorAll('.diff-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.diff === difficulty));
+    dismissWelcome(() => newGame());
+  });
+
+  document.getElementById('w-continue').addEventListener('click', () => {
+    if (loadSession()) {
+      dismissWelcome(() => restoreGame());
+    }
+  });
+
+  document.getElementById('w-learn').addEventListener('click', () => {
+    dismissWelcome(() => {
+      newGame(); // need a game in background
+      openLearnOverlay();
+    });
+  });
+
   // ── Init ───────────────────────────────────────────────────────
   setTheme(localStorage.getItem('q-sudoku-theme') || 'midnight');
   loadBestScores();
-
-  if (loadSession()) {
-    restoreGame();
-  } else {
-    newGame();
-  }
+  showWelcome();
 })();
