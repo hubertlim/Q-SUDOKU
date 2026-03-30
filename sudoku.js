@@ -265,5 +265,38 @@ const Sudoku = (() => {
     return errors;
   }
 
-  return { solve, generate, getErrors };
+  // ── Hint helpers ────────────────────────────────────────────────
+
+  function getCandidates(board, r, c) {
+    if (board[r][c] !== 0) return [];
+    const used = new Set();
+    for (let i = 0; i < N; i++) {
+      if (board[r][i]) used.add(board[r][i]);
+      if (board[i][c]) used.add(board[i][c]);
+    }
+    const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+    for (let dr = 0; dr < 3; dr++)
+      for (let dc = 0; dc < 3; dc++)
+        if (board[br + dr][bc + dc]) used.add(board[br + dr][bc + dc]);
+    const result = [];
+    for (let d = 1; d <= 9; d++) if (!used.has(d)) result.push(d);
+    return result;
+  }
+
+  function getMostConstrainedEmpty(board) {
+    let best = null, minCand = 10;
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        if (board[r][c] !== 0) continue;
+        const cand = getCandidates(board, r, c);
+        if (cand.length > 0 && cand.length < minCand) {
+          minCand = cand.length;
+          best = { r, c, candidates: cand };
+        }
+      }
+    }
+    return best;
+  }
+
+  return { solve, generate, getErrors, getCandidates, getMostConstrainedEmpty };
 })();

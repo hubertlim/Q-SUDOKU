@@ -446,7 +446,7 @@ h1 .dim { color: var(--text-dim); }
 
 #actions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.35rem;
 }
 
@@ -465,6 +465,43 @@ h1 .dim { color: var(--text-dim); }
 }
 
 #actions button:hover { border-color: var(--accent); background: var(--surface-hover); }
+
+#btn-hint { position: relative; }
+#hint-count {
+  font-size: 0.55rem;
+  color: var(--accent-glow);
+  margin-left: 0.15rem;
+}
+#btn-hint.exhausted { opacity: 0.35; pointer-events: none; }
+
+.cell.candidates {
+  font-size: calc(var(--cell) * 0.2);
+  line-height: 1.15;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+.cell.hint-nudge {
+  background: var(--accent-dim);
+  animation: nudge-pulse 0.6s ease-in-out 2;
+}
+
+.cell.hint-reveal {
+  color: var(--success);
+  animation: reveal-pop 0.4s ease-out;
+}
+
+@keyframes nudge-pulse {
+  0%, 100% { background: var(--accent-dim); }
+  50% { background: var(--selected-bg); }
+}
+
+@keyframes reveal-pop {
+  0% { transform: scale(1.4); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 #best-scores {
   display: flex;
@@ -567,7 +604,7 @@ h1 .dim { color: var(--text-dim); }
   #controls { gap: 0.25rem; }
   .diff-btn { padding: 0.35rem 0; font-size: 0.6rem; }
 
-  #actions { gap: 0.25rem; }
+  #actions { gap: 0.25rem; grid-template-columns: repeat(4, 1fr); }
   #actions button { padding: 0.4rem 0; font-size: 0.65rem; }
 }
 

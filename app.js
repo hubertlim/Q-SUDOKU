@@ -12,8 +12,11 @@
   let selected = null, timerInterval, seconds = 0;
   let difficulty = 'easy', cells = [], activeNum = 0;
   let paused = false, checks = 0, solved = false;
+  let hints = 0, maxHints = 5, lastHintCell = null;
 
   const SCORE_MULT = { easy: 1000, medium: 2000, hard: 3000 };
+  const HINT_LIMITS = { easy: 5, medium: 3, hard: 1 };
+  const HINT_PENALTY = 100;
   const SAVE_KEY = 'q-sudoku-save';
   const BEST_KEY = 'q-sudoku-best';
 
@@ -31,9 +34,7 @@
 
   function calcScore() {
     const base = SCORE_MULT[difficulty] || 1000;
-    const timePenalty = seconds;
-    const checkPenalty = checks * 50;
-    return Math.max(0, base - timePenalty - checkPenalty);
+    return Math.max(0, base - seconds - checks * 50 - hints * HINT_PENALTY);
   }
 
   function updateScoreDisplay() {
@@ -64,7 +65,7 @@
     if (solved) { localStorage.removeItem(SAVE_KEY); return; }
     const data = {
       puzzle, solution, given, difficulty,
-      seconds, checks, activeNum
+      seconds, checks, activeNum, hints, maxHints
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   }
@@ -81,6 +82,8 @@
       seconds = data.seconds || 0;
       checks = data.checks || 0;
       activeNum = data.activeNum || 0;
+      hints = data.hints || 0;
+      maxHints = data.maxHints || HINT_LIMITS[difficulty] || 5;
       solved = false;
 
       document.querySelectorAll('.diff-btn').forEach(b => {
@@ -197,7 +200,13 @@
   }
 
   function clearHighlights() {
-    cells.forEach(c => c.classList.remove('selected', 'highlight', 'same-num', 'error'));
+    cells.forEach(c => {
+      c.classList.remove('selected', 'highlight', 'same-num', 'error', 'candidates', 'hint-nudge');
+      // Restore cell text if candidates were showing
+      const r = parseInt(c.dataset.r), col = parseInt(c.dataset.c);
+      const v = puzzle[r][col];
+      c.textContent = v || '';
+    });
   }
 
   function placeNumber(num) {
@@ -297,6 +306,9 @@
     checks = 0;
     seconds = 0;
     activeNum = 0;
+    hints = 0;
+    maxHints = HINT_LIMITS[difficulty] || 5;
+    lastHintCell = null;
     btnPause.textContent = '⏸';
     btnPause.classList.remove('paused');
     numBtns.forEach(btn => btn.classList.remove('active-num'));
@@ -309,6 +321,7 @@
 
     renderBoard();
     startTimer();
+    updateHintButton();
     saveSession();
   }
 
@@ -326,7 +339,82 @@
 
     renderBoard();
     startTimer();
+    updateHintButton();
     showMessage('Game restored.', false);
+  }
+
+  function updateHintButton() {
+    const btn = document.getElementById('btn-hint');
+    const countEl = document.getElementById('hint-count');
+    const remaining = maxHints - hints;
+    countEl.textContent = `(${remaining})`;
+    btn.classList.toggle('exhausted', remaining <= 0);
+  }
+
+  function useHint() {
+    if (paused || solved) return;
+    if (hints >= maxHints) {
+      showMessage('No hints remaining.', true);
+      return;
+    }
+
+    // Tier 1: No cell selected → nudge (highlight most constrained empty cell)
+    if (!selected || given[selected.r][selected.c]) {
+      const target = Sudoku.getMostConstrainedEmpty(puzzle);
+      if (!target) return;
+      hints++;
+      clearHighlights();
+      selectCell(target.r, target.c);
+      const cell = getCell(target.r, target.c);
+      cell.classList.add('hint-nudge');
+      setTimeout(() => cell.classList.remove('hint-nudge'), 1200);
+      lastHintCell = `${target.r},${target.c}`;
+      showMessage(`Look here. (−${HINT_PENALTY} pts)`, false);
+      updateHintButton();
+      updateScoreDisplay();
+      saveSession();
+      return;
+    }
+
+    const { r, c } = selected;
+    if (puzzle[r][c] !== 0) {
+      showMessage('Cell already filled.', true);
+      return;
+    }
+
+    const cellKey = `${r},${c}`;
+
+    // Tier 2: Cell selected, first hint on it → show candidates
+    if (lastHintCell !== cellKey) {
+      hints++;
+      lastHintCell = cellKey;
+      const cands = Sudoku.getCandidates(puzzle, r, c);
+      const cell = getCell(r, c);
+      cell.classList.add('candidates');
+      cell.textContent = cands.join(' ');
+      showMessage(`Possible: ${cands.join(', ')}. (−${HINT_PENALTY} pts)`, false);
+      updateHintButton();
+      updateScoreDisplay();
+      saveSession();
+      return;
+    }
+
+    // Tier 3: Same cell, second hint → reveal answer
+    hints++;
+    lastHintCell = null;
+    const answer = solution[r][c];
+    puzzle[r][c] = answer;
+    const cell = getCell(r, c);
+    cell.classList.remove('candidates');
+    cell.textContent = answer;
+    cell.classList.add('hint-reveal');
+    setTimeout(() => cell.classList.remove('hint-reveal'), 400);
+    showMessage(`Revealed: ${answer}. (−${HINT_PENALTY} pts)`, false);
+    updateNumpadCounts();
+    updateHintButton();
+    updateScoreDisplay();
+    saveSession();
+    checkWin();
   }
 
   function checkBoard() {
@@ -400,6 +488,7 @@
 
   document.getElementById('btn-new').addEventListener('click', newGame);
   document.getElementById('btn-check').addEventListener('click', checkBoard);
+  document.getElementById('btn-hint').addEventListener('click', useHint);
   document.getElementById('btn-solve').addEventListener('click', solveBoard);
   btnPause.addEventListener('click', togglePause);
   document.getElementById('btn-resume').addEventListener('click', togglePause);
@@ -417,6 +506,7 @@
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') togglePause();
+    if (e.key === 'h' || e.key === 'H') useHint();
   });
 
   window.addEventListener('beforeunload', () => { stopTimer(); saveSession(); });
