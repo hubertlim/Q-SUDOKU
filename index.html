@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Q-SUDOKU — minimalistic sudoku puzzle game">
+  <meta name="theme-color" content="#0f0f13">
   <title>Q-SUDOKU</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">
+  <noscript>Q-SUDOKU requires JavaScript to run.</noscript>
+  <main id="app">
     <h1>Q-SUDOKU</h1>
-    <div id="controls">
+    <nav id="controls" aria-label="Difficulty selection">
       <button class="diff-btn active" data-diff="easy">Easy</button>
       <button class="diff-btn" data-diff="medium">Medium</button>
       <button class="diff-btn" data-diff="hard">Hard</button>
-    </div>
+    </nav>
     <div id="board" role="grid" aria-label="Sudoku board"></div>
-    <div id="numpad">
+    <div id="numpad" aria-label="Number input">
       <button class="num-btn" data-num="1">1</button>
       <button class="num-btn" data-num="2">2</button>
       <button class="num-btn" data-num="3">3</button>
@@ -25,16 +29,16 @@
       <button class="num-btn" data-num="7">7</button>
       <button class="num-btn" data-num="8">8</button>
       <button class="num-btn" data-num="9">9</button>
-      <button class="num-btn erase" data-num="0">✕</button>
+      <button class="num-btn erase" data-num="0" aria-label="Erase">✕</button>
     </div>
     <div id="actions">
       <button id="btn-new">New Game</button>
       <button id="btn-check">Check</button>
       <button id="btn-solve">Solve</button>
     </div>
-    <div id="timer">00:00</div>
-    <div id="message"></div>
-  </div>
+    <time id="timer" aria-live="off" aria-label="Elapsed time">00:00</time>
+    <div id="message" role="status" aria-live="polite"></div>
+  </main>
   <script src="sudoku.js"></script>
   <script src="app.js"></script>
 </body>

@@ -20,9 +20,8 @@
         cell.dataset.c = c;
         cell.setAttribute('role', 'gridcell');
         cell.setAttribute('tabindex', '0');
-        cell.setAttribute('aria-label', `Row ${r + 1}, Column ${c + 1}`);
+        cell.setAttribute('aria-label', `Row ${r + 1}, Column ${c + 1}${v ? ', value ' + v : ', empty'}`);
 
-        const v = puzzle[r][c];
         if (v) {
           cell.textContent = v;
           cell.classList.add('given');
@@ -94,6 +93,7 @@
   function handleCellKey(e) {
     if (!selected) return;
     const { r, c } = selected;
+    let handled = true;
 
     if (e.key >= '1' && e.key <= '9') {
       placeNumber(parseInt(e.key));
@@ -103,8 +103,9 @@
     else if (e.key === 'ArrowDown' && r < 8) selectCell(r + 1, c);
     else if (e.key === 'ArrowLeft' && c > 0) selectCell(r, c - 1);
     else if (e.key === 'ArrowRight' && c < 8) selectCell(r, c + 1);
+    else handled = false;
 
-    e.preventDefault();
+    if (handled) e.preventDefault();
   }
 
   // ── Timer ──────────────────────────────────────────────────────
@@ -196,11 +197,19 @@
   document.getElementById('btn-check').addEventListener('click', checkBoard);
   document.getElementById('btn-solve').addEventListener('click', solveBoard);
 
-  // Keyboard input anywhere
-  document.addEventListener('keydown', (e) => {
-    if (e.key >= '1' && e.key <= '9') placeNumber(parseInt(e.key));
-    else if (e.key === 'Backspace' || e.key === 'Delete') placeNumber(0);
+  // Keyboard input only when board area is focused
+  boardEl.addEventListener('keydown', (e) => {
+    if (e.key >= '1' && e.key <= '9') {
+      placeNumber(parseInt(e.key));
+      e.preventDefault();
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      placeNumber(0);
+      e.preventDefault();
+    }
   });
+
+  // Clean up timer on page unload
+  window.addEventListener('beforeunload', stopTimer);
 
   // ── Init ───────────────────────────────────────────────────────
   newGame();

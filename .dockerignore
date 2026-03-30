@@ -1,0 +1,11 @@
+.git
+.gitignore
+.dockerignore
+.vscode
+.idea
+README.md
+LICENSE
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+*.md

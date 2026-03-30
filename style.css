@@ -176,3 +176,21 @@ h1 {
 }
 
 #board.won { animation: glow 1.5s ease-in-out 3; }
+
+/* Keyboard focus indicators */
+.cell:focus-visible,
+.num-btn:focus-visible,
+.diff-btn:focus-visible,
+#actions button:focus-visible {
+  outline: 2px solid var(--accent-glow);
+  outline-offset: -2px;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
