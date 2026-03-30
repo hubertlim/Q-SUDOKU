@@ -13,9 +13,10 @@
   let difficulty = 'easy', cells = [], activeNum = 0;
   let paused = false, checks = 0, solved = false;
   let hints = 0, maxHints = 5, lastHintCell = null;
+  let streak = 0, isLearnMode = false;
 
-  const SCORE_MULT = { easy: 1000, medium: 2000, hard: 3000 };
-  const HINT_LIMITS = { easy: 5, medium: 3, hard: 1 };
+  const SCORE_MULT = { learn: 500, easy: 1000, medium: 2000, hard: 3000 };
+  const HINT_LIMITS = { learn: 99, easy: 5, medium: 3, hard: 1 };
   const HINT_PENALTY = 100;
   const SAVE_KEY = 'q-sudoku-save';
   const BEST_KEY = 'q-sudoku-best';
@@ -43,7 +44,7 @@
 
   function loadBestScores() {
     const data = JSON.parse(localStorage.getItem(BEST_KEY) || '{}');
-    ['easy', 'medium', 'hard'].forEach(d => {
+    ['learn', 'easy', 'medium', 'hard'].forEach(d => {
       const el = document.querySelector(`.best[data-diff="${d}"]`);
       const prefix = d[0].toUpperCase();
       el.textContent = data[d] != null ? `${prefix}: ${data[d]}` : `${prefix}: —`;
@@ -65,7 +66,8 @@
     if (solved) { localStorage.removeItem(SAVE_KEY); return; }
     const data = {
       puzzle, solution, given, difficulty,
-      seconds, checks, activeNum, hints, maxHints
+      seconds, checks, activeNum, hints, maxHints,
+      streak, isLearnMode
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   }
@@ -84,6 +86,8 @@
       activeNum = data.activeNum || 0;
       hints = data.hints || 0;
       maxHints = data.maxHints || HINT_LIMITS[difficulty] || 5;
+      streak = data.streak || 0;
+      isLearnMode = data.isLearnMode || false;
       solved = false;
 
       document.querySelectorAll('.diff-btn').forEach(b => {
@@ -155,9 +159,94 @@
     }
     updateNumpadCounts();
     updateScoreDisplay();
+    if (isLearnMode) renderLearnOverlays();
   }
 
   function getCell(r, c) { return cells[r * 9 + c]; }
+
+  // ── Learn mode ─────────────────────────────────────────────────
+
+  function renderLearnOverlays() {
+    updateStreakDisplay();
+    showPencilMarks();
+    showGuideCell();
+  }
+
+  function showPencilMarks() {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (puzzle[r][c] !== 0 || given[r][c]) continue;
+        const cands = Sudoku.getCandidates(puzzle, r, c);
+        const cell = getCell(r, c);
+        cell.classList.add('pencil-marks');
+        cell.textContent = cands.join(' ');
+      }
+    }
+  }
+
+  function showGuideCell() {
+    cells.forEach(c => c.classList.remove('guide-cell'));
+    // Find a cell with exactly 1 candidate (naked single)
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (puzzle[r][c] !== 0) continue;
+        const cands = Sudoku.getCandidates(puzzle, r, c);
+        if (cands.length === 1) {
+          getCell(r, c).classList.add('guide-cell');
+          return;
+        }
+      }
+    }
+    // Fallback: highlight MRV cell
+    const best = Sudoku.getMostConstrainedEmpty(puzzle);
+    if (best) getCell(best.r, best.c).classList.add('guide-cell');
+  }
+
+  function updateStreakDisplay() {
+    const bar = document.getElementById('streak-bar');
+    const val = document.getElementById('streak-value');
+    bar.classList.toggle('visible', isLearnMode);
+    val.textContent = streak;
+  }
+
+  function updateLearnUI() {
+    const scoreBar = document.getElementById('score-bar');
+    const streakBar = document.getElementById('streak-bar');
+    scoreBar.style.display = isLearnMode ? 'none' : '';
+    streakBar.classList.toggle('visible', isLearnMode);
+    if (isLearnMode) {
+      showMessage('Learn mode: pencil marks on, errors auto-correct. Follow the glow.', false);
+    }
+  }
+
+  function handleLearnPlacement(r, c, num) {
+    if (num === 0) return true; // erase always allowed
+    const correct = solution[r][c];
+    if (num === correct) {
+      streak++;
+      const cell = getCell(r, c);
+      cell.classList.add('correct-pop');
+      setTimeout(() => cell.classList.remove('correct-pop'), 500);
+      if (streak === 5) showMessage('Nice streak! 🔥', false);
+      else if (streak === 10) showMessage('On fire! 🔥🔥', false);
+      else if (streak === 20) showMessage('Unstoppable! 🔥🔥🔥', false);
+      else if (streak % 10 === 0 && streak > 0) showMessage(`${streak} in a row!`, false);
+      return true;
+    } else {
+      streak = 0;
+      const cell = getCell(r, c);
+      cell.classList.add('wrong-flash');
+      showMessage(`Not quite — try again.`, true);
+      setTimeout(() => {
+        puzzle[r][c] = 0;
+        cell.textContent = '';
+        cell.classList.remove('wrong-flash');
+        renderLearnOverlays();
+        updateNumpadCounts();
+      }, 600);
+      return false;
+    }
+  }
 
   // ── Cell interaction ───────────────────────────────────────────
 
@@ -201,11 +290,12 @@
 
   function clearHighlights() {
     cells.forEach(c => {
+      const wasCandidates = c.classList.contains('candidates');
       c.classList.remove('selected', 'highlight', 'same-num', 'error', 'candidates', 'hint-nudge');
-      // Restore cell text if candidates were showing
-      const r = parseInt(c.dataset.r), col = parseInt(c.dataset.c);
-      const v = puzzle[r][col];
-      c.textContent = v || '';
+      if (wasCandidates) {
+        const r = parseInt(c.dataset.r), col = parseInt(c.dataset.c);
+        c.textContent = puzzle[r][col] || '';
+      }
     });
   }
 
@@ -216,13 +306,21 @@
 
     puzzle[r][c] = num;
     const cell = getCell(r, c);
+    cell.classList.remove('pencil-marks', 'guide-cell');
     cell.textContent = num || '';
     cell.classList.add('pop');
     setTimeout(() => cell.classList.remove('pop'), 150);
 
+    if (isLearnMode && num !== 0) {
+      const ok = handleLearnPlacement(r, c, num);
+      if (!ok) return; // wrong answer, auto-erased
+      updateStreakDisplay();
+    }
+
     selectCell(r, c);
     updateNumpadCounts();
     updateScoreDisplay();
+    if (isLearnMode) renderLearnOverlays();
     saveSession();
     checkWin();
   }
@@ -309,6 +407,8 @@
     hints = 0;
     maxHints = HINT_LIMITS[difficulty] || 5;
     lastHintCell = null;
+    streak = 0;
+    isLearnMode = (difficulty === 'learn');
     btnPause.textContent = '⏸';
     btnPause.classList.remove('paused');
     numBtns.forEach(btn => btn.classList.remove('active-num'));
@@ -322,6 +422,7 @@
     renderBoard();
     startTimer();
     updateHintButton();
+    updateLearnUI();
     saveSession();
   }
 
@@ -340,6 +441,7 @@
     renderBoard();
     startTimer();
     updateHintButton();
+    updateLearnUI();
     showMessage('Game restored.', false);
   }
 
