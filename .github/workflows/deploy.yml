@@ -28,6 +28,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html style.css sudoku.js learn.js app.js .nojekyll _site/
+          cp -r js _site/
 
       - uses: actions/upload-pages-artifact@v3
         with:

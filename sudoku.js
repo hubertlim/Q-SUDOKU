@@ -1,303 +1,342 @@
 /**
- * Q-SUDOKU Engine
+ * Q-SUDOKU engine
  *
- * Solver:    Backtracking + bitmask constraints + MRV heuristic
- * Generator: Randomized fill → clue removal with uniqueness check
+ * Solver: backtracking + bitmask constraints + MRV heuristic
+ * Generator: randomized fill -> clue removal with uniqueness check
  */
-const Sudoku = (() => {
-  const N = 9;
-  const ALL = 0x1FF;
+export const Sudoku = (() => {
+  const N = 9
+  const ALL = 0x1FF
 
-  const boxIdx = (r, c) => (Math.floor(r / 3) * 3 + Math.floor(c / 3));
+  const boxIdx = (r, c) => Math.floor(r / 3) * 3 + Math.floor(c / 3)
 
   const popcount = (x) => {
-    let c = 0;
-    while (x) { c++; x &= x - 1; }
-    return c;
-  };
+    let count = 0
+    while (x) {
+      count += 1
+      x &= x - 1
+    }
+    return count
+  }
 
   const lowestBit = (x) => {
-    let pos = 0;
-    while (!((x >> pos) & 1)) pos++;
-    return pos;
-  };
+    let pos = 0
+    while (!((x >> pos) & 1)) pos += 1
+    return pos
+  }
 
   function* iterBits(mask) {
-    let m = mask;
-    while (m) {
-      const bit = m & (-m);
-      yield lowestBit(bit) + 1;
-      m ^= bit;
+    let current = mask
+    while (current) {
+      const bit = current & -current
+      yield lowestBit(bit) + 1
+      current ^= bit
     }
   }
 
-  // ── Solver ─────────────────────────────────────────────────────
-
   function solve(board) {
-    const grid = board.map(r => [...r]);
-    const rowMask = new Array(N).fill(0);
-    const colMask = new Array(N).fill(0);
-    const boxMask = new Array(N).fill(0);
+    const grid = board.map((row) => [...row])
+    const rowMask = new Array(N).fill(0)
+    const colMask = new Array(N).fill(0)
+    const boxMask = new Array(N).fill(0)
 
-    // Init masks
-    for (let r = 0; r < N; r++) {
-      for (let c = 0; c < N; c++) {
-        const v = grid[r][c];
-        if (v) {
-          const bit = 1 << (v - 1);
-          rowMask[r] |= bit;
-          colMask[c] |= bit;
-          boxMask[boxIdx(r, c)] |= bit;
-        }
+    for (let r = 0; r < N; r += 1) {
+      for (let c = 0; c < N; c += 1) {
+        const value = grid[r][c]
+        if (!value) continue
+
+        const bit = 1 << (value - 1)
+        rowMask[r] |= bit
+        colMask[c] |= bit
+        boxMask[boxIdx(r, c)] |= bit
       }
     }
 
     function candidates(r, c) {
-      return ALL & ~(rowMask[r] | colMask[c] | boxMask[boxIdx(r, c)]);
+      return ALL & ~(rowMask[r] | colMask[c] | boxMask[boxIdx(r, c)])
     }
 
-    function bt() {
-      // MRV: find empty cell with fewest candidates
-      let minCount = 10, bestR = -1, bestC = -1, bestCand = 0;
-      for (let r = 0; r < N; r++) {
-        for (let c = 0; c < N; c++) {
-          if (grid[r][c] === 0) {
-            const cand = candidates(r, c);
-            const cnt = popcount(cand);
-            if (cnt === 0) return false; // dead end
-            if (cnt < minCount) {
-              minCount = cnt;
-              bestR = r; bestC = c; bestCand = cand;
-              if (cnt === 1) break; // can't do better
-            }
+    function backtrack() {
+      let minCount = 10
+      let bestRow = -1
+      let bestCol = -1
+      let bestCandidates = 0
+
+      for (let r = 0; r < N; r += 1) {
+        for (let c = 0; c < N; c += 1) {
+          if (grid[r][c] !== 0) continue
+
+          const mask = candidates(r, c)
+          const count = popcount(mask)
+          if (count === 0) return false
+
+          if (count < minCount) {
+            minCount = count
+            bestRow = r
+            bestCol = c
+            bestCandidates = mask
+            if (count === 1) break
           }
         }
-        if (minCount === 1) break;
+
+        if (minCount === 1) break
       }
-      if (bestR === -1) return true; // all filled → solved
 
-      for (const d of iterBits(bestCand)) {
-        const bit = 1 << (d - 1);
-        grid[bestR][bestC] = d;
-        rowMask[bestR] |= bit;
-        colMask[bestC] |= bit;
-        boxMask[boxIdx(bestR, bestC)] |= bit;
+      if (bestRow === -1) return true
 
-        if (bt()) return true;
+      for (const digit of iterBits(bestCandidates)) {
+        const bit = 1 << (digit - 1)
+        grid[bestRow][bestCol] = digit
+        rowMask[bestRow] |= bit
+        colMask[bestCol] |= bit
+        boxMask[boxIdx(bestRow, bestCol)] |= bit
 
-        grid[bestR][bestC] = 0;
-        rowMask[bestR] ^= bit;
-        colMask[bestC] ^= bit;
-        boxMask[boxIdx(bestR, bestC)] ^= bit;
+        if (backtrack()) return true
+
+        grid[bestRow][bestCol] = 0
+        rowMask[bestRow] ^= bit
+        colMask[bestCol] ^= bit
+        boxMask[boxIdx(bestRow, bestCol)] ^= bit
       }
-      return false;
+
+      return false
     }
 
-    return bt() ? grid : null;
+    return backtrack() ? grid : null
   }
-
-  // ── Solution counter (stops at limit) ──────────────────────────
 
   function countSolutions(board, limit = 2) {
-    const grid = board.map(r => [...r]);
-    const rowMask = new Array(N).fill(0);
-    const colMask = new Array(N).fill(0);
-    const boxMask = new Array(N).fill(0);
+    const grid = board.map((row) => [...row])
+    const rowMask = new Array(N).fill(0)
+    const colMask = new Array(N).fill(0)
+    const boxMask = new Array(N).fill(0)
 
-    for (let r = 0; r < N; r++) {
-      for (let c = 0; c < N; c++) {
-        const v = grid[r][c];
-        if (v) {
-          const bit = 1 << (v - 1);
-          rowMask[r] |= bit;
-          colMask[c] |= bit;
-          boxMask[boxIdx(r, c)] |= bit;
-        }
+    for (let r = 0; r < N; r += 1) {
+      for (let c = 0; c < N; c += 1) {
+        const value = grid[r][c]
+        if (!value) continue
+
+        const bit = 1 << (value - 1)
+        rowMask[r] |= bit
+        colMask[c] |= bit
+        boxMask[boxIdx(r, c)] |= bit
       }
     }
 
-    let count = 0;
+    let count = 0
 
-    function bt() {
-      let minCount = 10, bestR = -1, bestC = -1, bestCand = 0;
-      for (let r = 0; r < N; r++) {
-        for (let c = 0; c < N; c++) {
-          if (grid[r][c] === 0) {
-            const cand = ALL & ~(rowMask[r] | colMask[c] | boxMask[boxIdx(r, c)]);
-            const cnt = popcount(cand);
-            if (cnt === 0) return;
-            if (cnt < minCount) {
-              minCount = cnt;
-              bestR = r; bestC = c; bestCand = cand;
-              if (cnt === 1) break;
-            }
+    function backtrack() {
+      let minCount = 10
+      let bestRow = -1
+      let bestCol = -1
+      let bestCandidates = 0
+
+      for (let r = 0; r < N; r += 1) {
+        for (let c = 0; c < N; c += 1) {
+          if (grid[r][c] !== 0) continue
+
+          const mask = ALL & ~(rowMask[r] | colMask[c] | boxMask[boxIdx(r, c)])
+          const candidateCount = popcount(mask)
+          if (candidateCount === 0) return
+
+          if (candidateCount < minCount) {
+            minCount = candidateCount
+            bestRow = r
+            bestCol = c
+            bestCandidates = mask
+            if (candidateCount === 1) break
           }
         }
-        if (minCount === 1) break;
+
+        if (minCount === 1) break
       }
-      if (bestR === -1) { count++; return; }
 
-      for (const d of iterBits(bestCand)) {
-        if (count >= limit) return;
-        const bit = 1 << (d - 1);
-        grid[bestR][bestC] = d;
-        rowMask[bestR] |= bit;
-        colMask[bestC] |= bit;
-        boxMask[boxIdx(bestR, bestC)] |= bit;
+      if (bestRow === -1) {
+        count += 1
+        return
+      }
 
-        bt();
+      for (const digit of iterBits(bestCandidates)) {
+        if (count >= limit) return
 
-        grid[bestR][bestC] = 0;
-        rowMask[bestR] ^= bit;
-        colMask[bestC] ^= bit;
-        boxMask[boxIdx(bestR, bestC)] ^= bit;
+        const bit = 1 << (digit - 1)
+        grid[bestRow][bestCol] = digit
+        rowMask[bestRow] |= bit
+        colMask[bestCol] |= bit
+        boxMask[boxIdx(bestRow, bestCol)] |= bit
+
+        backtrack()
+
+        grid[bestRow][bestCol] = 0
+        rowMask[bestRow] ^= bit
+        colMask[bestCol] ^= bit
+        boxMask[boxIdx(bestRow, bestCol)] ^= bit
       }
     }
 
-    bt();
-    return count;
+    backtrack()
+    return count
   }
 
-  // ── Generator ──────────────────────────────────────────────────
-
   function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+    for (let i = arr.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
     }
-    return arr;
+    return arr
   }
 
   function generateFull() {
-    const grid = Array.from({ length: N }, () => new Array(N).fill(0));
-    const rowMask = new Array(N).fill(0);
-    const colMask = new Array(N).fill(0);
-    const boxMask = new Array(N).fill(0);
+    const grid = Array.from({ length: N }, () => new Array(N).fill(0))
+    const rowMask = new Array(N).fill(0)
+    const colMask = new Array(N).fill(0)
+    const boxMask = new Array(N).fill(0)
 
-    function bt(pos) {
-      if (pos === 81) return true;
-      const r = Math.floor(pos / 9), c = pos % 9;
-      const cand = ALL & ~(rowMask[r] | colMask[c] | boxMask[boxIdx(r, c)]);
-      const digits = [...iterBits(cand)];
-      shuffle(digits);
+    function backtrack(pos) {
+      if (pos === N * N) return true
 
-      for (const d of digits) {
-        const bit = 1 << (d - 1);
-        grid[r][c] = d;
-        rowMask[r] |= bit;
-        colMask[c] |= bit;
-        boxMask[boxIdx(r, c)] |= bit;
+      const r = Math.floor(pos / N)
+      const c = pos % N
+      const candidates = ALL & ~(rowMask[r] | colMask[c] | boxMask[boxIdx(r, c)])
+      const digits = [...iterBits(candidates)]
+      shuffle(digits)
 
-        if (bt(pos + 1)) return true;
+      for (const digit of digits) {
+        const bit = 1 << (digit - 1)
+        grid[r][c] = digit
+        rowMask[r] |= bit
+        colMask[c] |= bit
+        boxMask[boxIdx(r, c)] |= bit
 
-        grid[r][c] = 0;
-        rowMask[r] ^= bit;
-        colMask[c] ^= bit;
-        boxMask[boxIdx(r, c)] ^= bit;
+        if (backtrack(pos + 1)) return true
+
+        grid[r][c] = 0
+        rowMask[r] ^= bit
+        colMask[c] ^= bit
+        boxMask[boxIdx(r, c)] ^= bit
       }
-      return false;
+
+      return false
     }
 
-    bt(0);
-    return grid;
+    backtrack(0)
+    return grid
   }
 
-  const CLUES = { easy: 38, medium: 30, hard: 24 };
+  const CLUES = { easy: 38, medium: 30, hard: 24 }
 
   function generate(difficulty = 'easy') {
-    const solution = generateFull();
-    const puzzle = solution.map(r => [...r]);
-    const clueCount = (typeof difficulty === 'number') ? difficulty : (CLUES[difficulty] || 38);
-    const target = 81 - clueCount;
+    const solution = generateFull()
+    const puzzle = solution.map((row) => [...row])
+    const clueCount = typeof difficulty === 'number' ? difficulty : CLUES[difficulty] || CLUES.easy
+    const targetRemovals = N * N - clueCount
 
-    // Build shuffled position list
     const positions = shuffle(
-      Array.from({ length: 81 }, (_, i) => [Math.floor(i / 9), i % 9])
-    );
+      Array.from({ length: N * N }, (_, index) => [Math.floor(index / N), index % N])
+    )
 
-    let removed = 0;
+    let removed = 0
     for (const [r, c] of positions) {
-      if (removed >= target) break;
-      const backup = puzzle[r][c];
-      puzzle[r][c] = 0;
+      if (removed >= targetRemovals) break
+
+      const backup = puzzle[r][c]
+      puzzle[r][c] = 0
 
       if (countSolutions(puzzle) !== 1) {
-        puzzle[r][c] = backup; // restore — removing breaks uniqueness
+        puzzle[r][c] = backup
       } else {
-        removed++;
+        removed += 1
       }
     }
 
-    return { puzzle, solution };
+    return { puzzle, solution }
   }
 
-  // ── Validation ─────────────────────────────────────────────────
-
   function getErrors(board) {
-    const errors = new Set();
-    for (let r = 0; r < N; r++) {
-      for (let c = 0; c < N; c++) {
-        const v = board[r][c];
-        if (!v) continue;
-        for (let c2 = 0; c2 < N; c2++) {
-          if (c2 !== c && board[r][c2] === v) {
-            errors.add(r * 9 + c);
-            errors.add(r * 9 + c2);
+    const errors = new Set()
+
+    for (let r = 0; r < N; r += 1) {
+      for (let c = 0; c < N; c += 1) {
+        const value = board[r][c]
+        if (!value) continue
+
+        for (let c2 = 0; c2 < N; c2 += 1) {
+          if (c2 !== c && board[r][c2] === value) {
+            errors.add(r * N + c)
+            errors.add(r * N + c2)
           }
         }
-        for (let r2 = 0; r2 < N; r2++) {
-          if (r2 !== r && board[r2][c] === v) {
-            errors.add(r * 9 + c);
-            errors.add(r2 * 9 + c);
+
+        for (let r2 = 0; r2 < N; r2 += 1) {
+          if (r2 !== r && board[r2][c] === value) {
+            errors.add(r * N + c)
+            errors.add(r2 * N + c)
           }
         }
-        const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
-        for (let dr = 0; dr < 3; dr++) {
-          for (let dc = 0; dc < 3; dc++) {
-            const r2 = br + dr, c2 = bc + dc;
-            if ((r2 !== r || c2 !== c) && board[r2][c2] === v) {
-              errors.add(r * 9 + c);
-              errors.add(r2 * 9 + c2);
+
+        const boxRow = Math.floor(r / 3) * 3
+        const boxCol = Math.floor(c / 3) * 3
+        for (let dr = 0; dr < 3; dr += 1) {
+          for (let dc = 0; dc < 3; dc += 1) {
+            const r2 = boxRow + dr
+            const c2 = boxCol + dc
+            if ((r2 !== r || c2 !== c) && board[r2][c2] === value) {
+              errors.add(r * N + c)
+              errors.add(r2 * N + c2)
             }
           }
         }
       }
     }
-    return errors;
+
+    return errors
   }
 
-  // ── Hint helpers ────────────────────────────────────────────────
-
   function getCandidates(board, r, c) {
-    if (board[r][c] !== 0) return [];
-    const used = new Set();
-    for (let i = 0; i < N; i++) {
-      if (board[r][i]) used.add(board[r][i]);
-      if (board[i][c]) used.add(board[i][c]);
+    if (board[r][c] !== 0) return []
+
+    const used = new Set()
+    for (let index = 0; index < N; index += 1) {
+      if (board[r][index]) used.add(board[r][index])
+      if (board[index][c]) used.add(board[index][c])
     }
-    const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
-    for (let dr = 0; dr < 3; dr++)
-      for (let dc = 0; dc < 3; dc++)
-        if (board[br + dr][bc + dc]) used.add(board[br + dr][bc + dc]);
-    const result = [];
-    for (let d = 1; d <= 9; d++) if (!used.has(d)) result.push(d);
-    return result;
+
+    const boxRow = Math.floor(r / 3) * 3
+    const boxCol = Math.floor(c / 3) * 3
+    for (let dr = 0; dr < 3; dr += 1) {
+      for (let dc = 0; dc < 3; dc += 1) {
+        const value = board[boxRow + dr][boxCol + dc]
+        if (value) used.add(value)
+      }
+    }
+
+    const candidates = []
+    for (let digit = 1; digit <= N; digit += 1) {
+      if (!used.has(digit)) candidates.push(digit)
+    }
+    return candidates
   }
 
   function getMostConstrainedEmpty(board) {
-    let best = null, minCand = 10;
-    for (let r = 0; r < N; r++) {
-      for (let c = 0; c < N; c++) {
-        if (board[r][c] !== 0) continue;
-        const cand = getCandidates(board, r, c);
-        if (cand.length > 0 && cand.length < minCand) {
-          minCand = cand.length;
-          best = { r, c, candidates: cand };
+    let best = null
+    let minCandidates = 10
+
+    for (let r = 0; r < N; r += 1) {
+      for (let c = 0; c < N; c += 1) {
+        if (board[r][c] !== 0) continue
+
+        const candidates = getCandidates(board, r, c)
+        if (candidates.length > 0 && candidates.length < minCandidates) {
+          minCandidates = candidates.length
+          best = { r, c, candidates }
         }
       }
     }
-    return best;
+
+    return best
   }
 
-  return { solve, generate, getErrors, getCandidates, getMostConstrainedEmpty };
-})();
+  return { solve, generate, getErrors, getCandidates, getMostConstrainedEmpty }
+})()
+
+export default Sudoku

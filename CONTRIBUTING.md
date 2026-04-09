@@ -1,45 +1,54 @@
 # Contributing to Q-SUDOKU
 
-Thanks for taking the time to contribute.
+Thanks for contributing to Q-SUDOKU.
 
-## Ways to help
+## Project Principles
 
-- **Bug reports** — open an issue using the bug report template
-- **Feature ideas** — open an issue using the feature request template
-- **Code** — fix a bug or implement a feature (see below)
-- **Docs** — improve the README or add comments
+- Vanilla JavaScript only
+- No framework or bundler
+- Keep the app deployable as a plain static site
+- Preserve the current visual identity unless a change clearly improves usability or maintainability
+- Prefer focused improvements over large rewrites
 
-## Getting started
+## Local Workflow
 
-1. Fork the repo and clone it
-2. Run locally: `docker compose up --build`
-3. Open `http://localhost:8080`
-4. Make your changes — no build step, just edit HTML/CSS/JS
+Use Docker for local serving and verification.
 
-## Good first issues
+1. Fork the repository and clone your branch.
+2. Start the local server with `docker compose up --build`.
+3. Open `http://localhost:8080`.
+4. Edit the HTML, CSS, and JavaScript directly. There is no build step.
 
-Look for issues tagged [`good first issue`](https://github.com/hubertlim/Q-SUDOKU/issues?q=label%3A%22good+first+issue%22). These are small, well-scoped tasks that don't require deep knowledge of the codebase.
+## Code Layout
 
-## Code guidelines
+The main browser app is split into small ES modules:
 
-- No frameworks, no bundlers — vanilla JS only
-- Keep it minimal: only add what's needed
-- Test in both desktop and mobile viewports
-- Match the existing code style (monospace font, CSS variables, IIFE pattern)
+- `app.js` is the entry point loaded by `index.html`.
+- `js/app/bootstrap.js` initializes the app and wires events.
+- `js/app/state.js` owns shared state, timer logic, scoring, and persistence.
+- `js/app/board-ui.js` renders the board and manages board-focused UI helpers.
+- `js/app/learn-mode.js` manages learn mode overlays and challenge progression.
+- `js/app/game-controller.js` coordinates gameplay actions.
+- `sudoku.js` contains the puzzle engine.
+- `learn.js` contains learn mode challenge data and progression helpers.
 
-## Submitting a PR
+## Contribution Guidelines
 
-1. Create a branch: `git checkout -b fix/your-fix-name`
-2. Make your changes
-3. Open a PR against `main` with a clear title and description
-4. Reference any related issue: `Fixes #123`
+- Keep runtime dependencies at zero.
+- Keep the code readable in a static-hosted environment.
+- If you add UI behavior, make sure it still works on mobile viewports.
+- If you change the module structure, update the documentation in `README.md` and this file.
+- Avoid introducing tooling that would make GitHub Pages hosting more complex.
 
-## Project structure
+## Pull Requests
 
-```
-index.html   — markup
-style.css    — all styles (CSS variables for theming)
-sudoku.js    — puzzle engine (solver, generator, validator)
-learn.js     — challenge system data
-app.js       — game logic and UI
-```
+1. Create a focused branch from `main`.
+2. Make the smallest change that fully solves the problem.
+3. Verify the affected flows using Docker.
+4. Open a pull request with a clear summary, testing notes, and any follow-up ideas.
+
+## Issues and Ideas
+
+- Report bugs with clear reproduction steps.
+- Propose improvements that fit the project's minimal, static-first philosophy.
+- Documentation improvements are welcome and appreciated.
