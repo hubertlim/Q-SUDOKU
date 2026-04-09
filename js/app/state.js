@@ -27,6 +27,14 @@ export function createAppState(elements) {
     isLearnMode: false,
     currentChallenge: null,
     currentChallengeId: null,
+    learnSupportLevel: 'modelled',
+    learnHintStep: 0,
+    learnMistakes: 0,
+    learnSupportUsed: 'modelled',
+    learnCompletedSteps: 0,
+    learnGoalSteps: 0,
+    learnRecentSuccesses: 0,
+    learnRecentStruggles: 0,
     welcomeDifficulty: localStorage.getItem('q-sudoku-diff') || 'easy'
   }
 
@@ -63,7 +71,15 @@ export function createAppState(elements) {
       maxHints: state.maxHints,
       streak: state.streak,
       isLearnMode: state.isLearnMode,
-      currentChallengeId: state.currentChallengeId
+      currentChallengeId: state.currentChallengeId,
+      learnSupportLevel: state.learnSupportLevel,
+      learnHintStep: state.learnHintStep,
+      learnMistakes: state.learnMistakes,
+      learnSupportUsed: state.learnSupportUsed,
+      learnCompletedSteps: state.learnCompletedSteps,
+      learnGoalSteps: state.learnGoalSteps,
+      learnRecentSuccesses: state.learnRecentSuccesses,
+      learnRecentStruggles: state.learnRecentStruggles
     }
   }
 
@@ -107,6 +123,14 @@ export function createAppState(elements) {
       state.streak = data.streak || 0
       state.isLearnMode = data.isLearnMode || false
       state.currentChallengeId = data.currentChallengeId || null
+      state.learnSupportLevel = data.learnSupportLevel || 'modelled'
+      state.learnHintStep = data.learnHintStep || 0
+      state.learnMistakes = data.learnMistakes || 0
+      state.learnSupportUsed = data.learnSupportUsed || state.learnSupportLevel
+      state.learnCompletedSteps = data.learnCompletedSteps || 0
+      state.learnGoalSteps = data.learnGoalSteps || 0
+      state.learnRecentSuccesses = data.learnRecentSuccesses || 0
+      state.learnRecentStruggles = data.learnRecentStruggles || 0
       state.currentChallenge = null
       state.selected = null
       state.paused = false

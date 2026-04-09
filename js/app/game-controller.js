@@ -18,12 +18,13 @@ export function attachGameController(app) {
     state.paused = false
     state.solved = false
     state.selected = null
+    state.learnHintStep = 0
     app.setActiveNum(0)
   }
 
   function syncLearnRestoreState() {
     if (!state.isLearnMode || !state.currentChallengeId) return
-    state.currentChallenge = app.learn.getChallenge(state.currentChallengeId)
+    state.currentChallenge = app.learn.getLessonMeta(state.currentChallengeId)
     app.syncChallengeBar()
   }
 
@@ -48,6 +49,13 @@ export function attachGameController(app) {
     state.currentChallenge = null
     state.currentChallengeId = null
     state.isLearnMode = false
+    state.learnSupportLevel = 'modelled'
+    state.learnSupportUsed = 'modelled'
+    state.learnMistakes = 0
+    state.learnCompletedSteps = 0
+    state.learnGoalSteps = 0
+    state.learnRecentSuccesses = 0
+    state.learnRecentStruggles = 0
 
     const result = Sudoku.generate(state.difficulty)
     state.puzzle = result.puzzle
@@ -80,6 +88,7 @@ export function attachGameController(app) {
     if (state.paused || state.solved) return
     app.dismissConfirm?.()
     app.selectCell(r, c)
+    if (state.isLearnMode) app.renderLearnOverlays()
   }
 
   app.placeNumber = (num) => {
@@ -88,6 +97,12 @@ export function attachGameController(app) {
     const { r, c } = state.selected
     if (state.given[r][c]) return
 
+    if (state.isLearnMode) {
+      if (num === 0) return
+      app.handleLearnPlacement(r, c, num)
+      return
+    }
+
     state.puzzle[r][c] = num
     const cell = app.getCell(r, c)
     cell.classList.remove('pencil-marks', 'guide-cell')
@@ -95,16 +110,9 @@ export function attachGameController(app) {
     cell.classList.add('pop')
     setTimeout(() => cell.classList.remove('pop'), 150)
 
-    if (state.isLearnMode && num !== 0) {
-      const ok = app.handleLearnPlacement(r, c, num)
-      if (!ok) return
-      app.updateStreakDisplay()
-    }
-
     app.selectCell(r, c)
     app.updateNumpadCounts()
     app.updateScoreDisplay()
-    if (state.isLearnMode) app.renderLearnOverlays()
     app.saveSession()
     app.checkWin()
   }
@@ -123,12 +131,16 @@ export function attachGameController(app) {
       app.placeNumber(0)
     } else if (event.key === 'ArrowUp' && r > 0) {
       app.selectCell(r - 1, c)
+      if (state.isLearnMode) app.renderLearnOverlays()
     } else if (event.key === 'ArrowDown' && r < size - 1) {
       app.selectCell(r + 1, c)
+      if (state.isLearnMode) app.renderLearnOverlays()
     } else if (event.key === 'ArrowLeft' && c > 0) {
       app.selectCell(r, c - 1)
+      if (state.isLearnMode) app.renderLearnOverlays()
     } else if (event.key === 'ArrowRight' && c < size - 1) {
       app.selectCell(r, c + 1)
+      if (state.isLearnMode) app.renderLearnOverlays()
     } else {
       handled = false
     }
@@ -138,6 +150,11 @@ export function attachGameController(app) {
 
   app.useHint = () => {
     if (state.paused || state.solved) return
+
+    if (state.isLearnMode) {
+      app.useLearnHint()
+      return
+    }
 
     if (state.hints >= state.maxHints) {
       app.showMessage('No hints remaining.', true)
@@ -199,8 +216,8 @@ export function attachGameController(app) {
   app.checkBoard = () => {
     if (state.paused || state.solved) return
 
-    if (state.currentChallenge && state.currentChallenge.size === 4) {
-      app.showMessage('Use the guide cell in learn mode.', false)
+    if (state.isLearnMode) {
+      app.showMessage('Learn mode checks one coached move at a time.', false)
       return
     }
 
@@ -234,26 +251,15 @@ export function attachGameController(app) {
   }
 
   app.checkWin = () => {
+    if (state.isLearnMode) return
     if (state.puzzle.flat().some((value) => value === 0)) return
 
-    if (state.currentChallenge && state.currentChallenge.size === 4) {
-      const correct = state.puzzle.every((row, r) =>
-        row.every((value, c) => value === state.solution[r][c])
-      )
-      if (!correct) return
-    } else {
-      const errors = Sudoku.getErrors(state.puzzle)
-      if (errors.size > 0) return
-    }
+    const errors = Sudoku.getErrors(state.puzzle)
+    if (errors.size > 0) return
 
     state.solved = true
     app.stopTimer()
     elements.boardEl.classList.add('won')
-
-    if (state.currentChallenge) {
-      app.endChallenge()
-      return
-    }
 
     const score = app.calcScore()
     app.saveBestScore(score)

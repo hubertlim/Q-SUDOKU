@@ -11,7 +11,7 @@ The project focuses on a clean Sudoku experience without frameworks, build tooli
 ## Features
 
 - Three standard difficulties with unique puzzle generation
-- Learn mode with 12 progressive challenges from 4x4 boards to harder 9x9 puzzles
+- Dynamic learn mode with short 9x9 coaching sessions focused on core human-solving techniques
 - Real-time scoring based on time, checks, and hints used
 - Hint system that targets constrained cells instead of random reveals
 - Pause and resume support
@@ -32,7 +32,7 @@ Puzzle generation first creates a complete valid grid with randomized backtracki
 
 ### Learn mode
 
-`learn.js` defines a staged curriculum. Early challenges teach basic row, column, and box reasoning on 4x4 grids. Later challenges move into standard 9x9 concepts such as singles, scanning, pairs, and harder full-board play. The app tracks challenge stars in `localStorage` so progression persists across sessions.
+`learn.js` defines a dynamic 9x9 curriculum built around the next logical move. Instead of teaching on smaller boards, the app serves short real-board drills around naked singles, hidden singles, box scanning, and mixed review. The learn mode tracks stars in `localStorage` while adapting support between modelled, guided, and independent play.
 
 ## Architecture
 

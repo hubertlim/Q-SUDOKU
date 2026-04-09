@@ -17,6 +17,7 @@ function collectElements() {
     challengeBar: document.getElementById('challenge-bar'),
     challengeDone: document.getElementById('challenge-done'),
     challengeInfo: document.getElementById('ch-bar-info'),
+    challengeSupportButton: document.getElementById('ch-bar-support'),
     challengeTipButton: document.getElementById('ch-bar-tip'),
     completeBack: document.getElementById('complete-back'),
     completeMessage: document.getElementById('complete-msg'),
@@ -41,9 +42,13 @@ function collectElements() {
     lessonBack: document.getElementById('lesson-back'),
     lessonBadge: document.getElementById('lesson-badge'),
     lessonDesc: document.getElementById('lesson-desc'),
+    lessonLook: document.getElementById('lesson-look'),
+    lessonPractice: document.getElementById('lesson-practice'),
     lessonStart: document.getElementById('lesson-start'),
+    lessonSupport: document.getElementById('lesson-support'),
     lessonTip: document.getElementById('lesson-tip'),
     lessonTitle: document.getElementById('lesson-title'),
+    lessonWhy: document.getElementById('lesson-why'),
     messageEl: document.getElementById('message'),
     numBtns: [...document.querySelectorAll('.num-btn')],
     pauseOverlay: document.getElementById('pause-overlay'),
@@ -129,7 +134,7 @@ function showWelcome() {
   if (best.hard != null) parts.push(`H: ${best.hard}`)
 
   const stars = app.learn.getTotalStars()
-  if (stars > 0) parts.push(`Stars ${stars}/${app.learn.CHALLENGES.length * 3}`)
+  if (stars > 0) parts.push(`Stars ${stars}/${app.learn.LESSONS.length * 3}`)
   elements.welcomeStats.textContent = parts.join(' | ')
 }
 

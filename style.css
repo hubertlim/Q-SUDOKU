@@ -739,6 +739,31 @@ h1 .dim { color: var(--text-dim); }
 }
 #lesson-title { font-size: 1rem; font-weight: 400; color: var(--text); margin-bottom: 0.5rem; }
 #lesson-desc { font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 0.5rem; }
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+.lesson-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.6rem;
+}
+.lesson-label {
+  display: block;
+  font-size: 0.55rem;
+  color: var(--accent-glow);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.25rem;
+}
+.lesson-block p {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
 .tip {
   font-size: 0.7rem; color: var(--success); padding: 0.5rem 0.6rem;
   background: var(--surface); border-left: 3px solid var(--success);
@@ -842,6 +867,7 @@ h1 .dim { color: var(--text-dim); }
   display: none;
   justify-content: space-between;
   align-items: center;
+  gap: 0.35rem;
   padding: 0.4rem 0.6rem;
   background: var(--surface);
   border: 1px solid var(--success);
@@ -850,10 +876,17 @@ h1 .dim { color: var(--text-dim); }
   letter-spacing: 0.04em;
 }
 #challenge-bar.visible { display: flex; }
-#challenge-bar .ch-info { color: var(--success); }
+#challenge-bar .ch-info { color: var(--success); flex: 1; min-width: 0; }
 #challenge-bar .ch-tip-btn {
-  background: none; border: none; color: var(--text-dim);
-  cursor: pointer; font-size: 0.65rem; font-family: inherit;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.62rem;
+  font-family: inherit;
+  padding: 0.18rem 0.5rem;
+  white-space: nowrap;
 }
 #challenge-bar .ch-tip-btn:hover { color: var(--accent); }
 
@@ -1115,6 +1148,9 @@ h1 .dim { color: var(--text-dim); }
   .challenge-card .ch-stars { font-size: 0.5rem; }
 
   #lesson-desc { font-size: 0.7rem; }
+  .lesson-grid { grid-template-columns: 1fr; gap: 0.35rem; }
+  .lesson-block { padding: 0.45rem 0.5rem; }
+  .lesson-block p { font-size: 0.63rem; }
   .tip { font-size: 0.65rem; padding: 0.4rem 0.5rem; }
   #lesson-actions { gap: 0.25rem; }
   .learn-btn { font-size: 0.65rem; padding: 0.4rem 0; }
@@ -1137,7 +1173,7 @@ h1 .dim { color: var(--text-dim); }
   }
 
   #challenge-bar { font-size: 0.55rem; }
-  #challenge-bar .ch-tip-btn { font-size: 0.55rem; }
+  #challenge-bar .ch-tip-btn { font-size: 0.52rem; padding: 0.16rem 0.42rem; }
 }
 
 /* ── Reduced motion ─────────────────────────────────────────── */
