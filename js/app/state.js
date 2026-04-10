@@ -8,6 +8,16 @@ export const SAVE_KEY = 'q-sudoku-save'
 export const BEST_KEY = 'q-sudoku-best'
 export const THEME_KEY = 'q-sudoku-theme'
 
+const DEFAULT_THEME = 'midnight'
+const THEME_META_COLORS = {
+  midnight: '#0a0a10',
+  nord: '#2e3440',
+  rose: '#191724',
+  paper: '#f5f0e8',
+  cyberpunk: '#090712',
+  mono: '#111215'
+}
+
 export function createAppState(elements) {
   const state = {
     puzzle: null,
@@ -174,10 +184,17 @@ export function createAppState(elements) {
   }
 
   function setTheme(name) {
-    document.documentElement.setAttribute('data-theme', name)
-    localStorage.setItem(THEME_KEY, name)
+    const themeName = THEME_META_COLORS[name] ? name : DEFAULT_THEME
+    document.documentElement.setAttribute('data-theme', themeName)
+    localStorage.setItem(THEME_KEY, themeName)
+
+    const themeColorMeta = document.getElementById('theme-color-meta')
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', THEME_META_COLORS[themeName])
+    }
+
     elements.themeDots.forEach((dot) => {
-      dot.classList.toggle('active', dot.dataset.theme === name)
+      dot.classList.toggle('active', dot.dataset.theme === themeName)
     })
   }
 
